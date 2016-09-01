@@ -36,18 +36,18 @@ public class DownLoadTask {
         this.downloadInfo = downloadInfo;
         taskState = this.downloadInfo.getState();
         this.fileRespondResult = fileRespondResult;
-        download(true);
+//        download(true);
     }
 
     public void stop() {
         this.downloadInfo.getSubscriber().unsubscribe();
+        resetProgress();
         if (this.downloadInfo.getState() != DownLoadManager.STATE_FINISH){
-            DownLoadManager.getManager().removeTask(this.downloadInfo);
             File file = new File(downloadInfo.getFileSavePath() + downloadInfo.getFileName());
             if (file.exists()) file.delete();
         }
         // TODO: 2016/8/31 删除数据库记录
-        HttpDbUtil.instance.delete(downloadInfo);
+//        HttpDbUtil.instance.delete(downloadInfo);
     }
 
     public void pause(long startPoints) {
@@ -59,6 +59,7 @@ public class DownLoadTask {
         HttpDbUtil.instance.updateState(downloadInfo);
     }
 
+
     public void resume(){
         download(false);
     }
@@ -68,6 +69,7 @@ public class DownLoadTask {
     }
 
     public void download( boolean isRestart) {
+        downloadInfo.setState(DownLoadManager.STATE_DOWNLOADING);
         isStart = isRestart;
         if (isRestart) {
             startPoints = 0L;
@@ -129,6 +131,11 @@ public class DownLoadTask {
         HttpDbUtil.instance.update(downloadInfo);
 
         fileRespondResult.onSuccess("");
+    }
+
+    private void resetProgress(){
+        startPoints = 0L;
+        this.downloadInfo.setProgress(0);
     }
 
 }

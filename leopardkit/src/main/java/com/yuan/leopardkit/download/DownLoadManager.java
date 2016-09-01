@@ -65,9 +65,27 @@ public class DownLoadManager {
         HttpDbUtil.instance.delete(downloadInfo);
     }
 
+    public void removeAllTask(){
+        for (DownloadInfo downloadInfo : downloadInfosList){
+            downloadInfo.getDownLoadTask().stop();
+            File downFile = new File(downloadInfo.getFileSavePath() + downloadInfo.getFileName());
+            if (downFile.exists()){
+                downFile.delete();
+            }
+        }
+        downloadInfosList.clear();
+
+    }
+
     public void restartAllTask(){
         for (DownloadInfo downloadInfo : downloadInfosList){
             downloadInfo.getDownLoadTask().download(true);
+        }
+    }
+
+    public void pauseAllTask(){
+        for (DownloadInfo downloadInfo : downloadInfosList){
+            downloadInfo.getDownLoadTask().pause(downloadInfo.getProgress());
         }
     }
 

@@ -11,7 +11,7 @@ public class FileLoadInfo {
 
     private int type;// 0 下载 1上传
 
-    private int state;
+    private int state = 1;
 
     private String url;
 

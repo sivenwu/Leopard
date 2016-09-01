@@ -10,6 +10,8 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.yuan.leopardkit.LeopardHttp;
+import com.yuan.leopardkit.download.DownLoadManager;
+import com.yuan.leopardkit.download.model.DownloadInfo;
 import com.yuan.leopardkit.interfaces.IProgress;
 
 import java.math.BigDecimal;
@@ -40,57 +42,72 @@ public class DownLoadApater extends RecyclerView.Adapter<DownLoadApater.MyViewHo
 
     @Override
     public void onBindViewHolder(final MyViewHolder holder, final int position) {
+        final DownloadInfo info = data.get(position).getInfo();
+
+        LeopardHttp.DWONLOAD(data.get(position).getInfo(), new IProgress() {
+            @Override
+            public void onProgress(long progress, long total, boolean done) {
+                if (holder.currentProgress == 0) {
+                    holder.realSumSize = total;
+                }
+
+                if (info.getState() == DownLoadManager.STATE_PAUSE){
+                    return ;//防止異步影響
+                }
+
+                holder.currentProgress = progress+ holder.breakProgress;
+                holder.progressBar.setMax((int) holder.realSumSize );
+                holder.progressBar.setProgress((int)  holder.currentProgress);
+
+                double curP = 0;
+                double curTotal = 0;
+                if (holder.currentProgress / 1024L < 1024L) {
+                    curP = (double) holder.currentProgress / 1024;
+                    curTotal = (double) holder.realSumSize / 1024L / 1024L;
+                    holder.prgressTv.setText(Double.toString(getRealNum(curP)) + "KB/" + Double.toString(getRealNum(curTotal)) + "MB");
+                } else {
+                    curP = (double) holder.currentProgress / 1024L / 1024L;
+                    curTotal = (double) holder.realSumSize / 1024L / 1024L;
+                    holder.prgressTv.setText(Double.toString(getRealNum(curP)) + "MB/" + Double.toString(getRealNum(curTotal)) + "MB");
+                }
+                if (done) {
+                    holder.downBtn.setText("重新開始");
+//                                holder.state = 0;
+                    holder.prgressTv.setText(holder.prgressTv.getText() +" 下載完成！");
+                }
+            }
+        });
+
+        if (info.getState() == DownLoadManager.STATE_WAITING){
+            holder.downBtn.setText("下载");
+        }
+        if (info.getState() == DownLoadManager.STATE_DOWNLOADING){
+            holder.downBtn.setText("暂停");
+        }
+        if (info.getState() == DownLoadManager.STATE_PAUSE){
+            holder.downBtn.setText("继续");
+        }
+
+
         holder.downBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (holder.state == 0) {
+                if (info.getState() == DownLoadManager.STATE_WAITING) {
                     holder.resetProgress();
-                    holder.state = 2;
+//                    holder.state = 2;
                     holder.downBtn.setText("暂停");
-                    LeopardHttp.DWONLOAD(data.get(position).getInfo(), new IProgress() {
-                        @Override
-                        public void onProgress(long progress, long total, boolean done) {
-                            if (holder.currentProgress == 0) {
-                                holder.realSumSize = total;
-                            }
-
-                            if ( holder.state == 1){
-                                return ;//防止異步影響
-                            }
-
-                            holder.currentProgress = progress+ holder.breakProgress;
-                            holder.progressBar.setMax((int) holder.realSumSize );
-                            holder.progressBar.setProgress((int)  holder.currentProgress);
-
-                            double curP = 0;
-                            double curTotal = 0;
-                            if (holder.currentProgress / 1024L < 1024L) {
-                                curP = (double) holder.currentProgress / 1024;
-                                curTotal = (double) holder.realSumSize / 1024L / 1024L;
-                                holder.prgressTv.setText(Double.toString(getRealNum(curP)) + "KB/" + Double.toString(getRealNum(curTotal)) + "MB");
-                            } else {
-                                curP = (double) holder.currentProgress / 1024L / 1024L;
-                                curTotal = (double) holder.realSumSize / 1024L / 1024L;
-                                holder.prgressTv.setText(Double.toString(getRealNum(curP)) + "MB/" + Double.toString(getRealNum(curTotal)) + "MB");
-                            }
-                            if (done) {
-                                holder.downBtn.setText("重新開始");
-                                holder.state = 0;
-                                holder.prgressTv.setText(holder.prgressTv.getText() +" 下載完成！");
-                            }
-                        }
-                    });
+                    info.getDownLoadTask().reStart();
                     return;
                 }
 
-                if (holder.state == 1) {
+                if (info.getState() == DownLoadManager.STATE_PAUSE) {
                     holder.state = 2;
                     holder.downBtn.setText("暫停");
                     data.get(position).getInfo().getDownLoadTask().resume();
                     return;
                 }
 
-                if (holder.state == 2) {
+                if (info.getState() == DownLoadManager.STATE_DOWNLOADING) {
                     holder.state = 1;
                     holder.downBtn.setText("继续");
                     holder.breakProgress = holder.currentProgress;
