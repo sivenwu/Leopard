@@ -5,9 +5,9 @@ import android.util.Log;
 
 import com.yuan.leopardkit.db.HttpDbUtil;
 import com.yuan.leopardkit.download.DownLoadManager;
+import com.yuan.leopardkit.download.model.DownloadInfo;
 import com.yuan.leopardkit.download.task.DownLoadSubscriber;
 import com.yuan.leopardkit.download.task.DownLoadTask;
-import com.yuan.leopardkit.download.model.DownloadInfo;
 import com.yuan.leopardkit.http.base.BaseEnetity;
 import com.yuan.leopardkit.http.base.BaseSubscriber;
 import com.yuan.leopardkit.http.factory.DownLoadFileFactory;
@@ -16,7 +16,7 @@ import com.yuan.leopardkit.http.factory.RequestJsonFactory;
 import com.yuan.leopardkit.http.factory.UploadFileFactory;
 import com.yuan.leopardkit.interfaces.FileRespondResult;
 import com.yuan.leopardkit.interfaces.HttpRespondResult;
-import com.yuan.leopardkit.interfaces.ProgressListener;
+import com.yuan.leopardkit.interfaces.IProgress;
 import com.yuan.leopardkit.servers.BaseServerApi;
 import com.yuan.leopardkit.upload.FileUploadEnetity;
 import com.yuan.leopardkit.upload.UploadFileRequestBody;
@@ -51,9 +51,9 @@ import rx.schedulers.Schedulers;
  * Created by Yuan on 2016/8/23.
  * Detail  Retrofit http管理类 build模式构建
  */
-public class RetrofitHttp {
+public class LeopardClient {
 
-    private String TAG = "RetrofitHttp";
+    private String TAG = "LeopardClient";
 
     private Context mContext;
 
@@ -71,7 +71,7 @@ public class RetrofitHttp {
     private MediaType jsonMediaType = MediaType.parse("application/json; charset=utf-8");
     private MediaType dataMediaType = MediaType.parse("multipart/form-data");
 
-    public RetrofitHttp(BaseServerApi serverApi, Retrofit retrofit, Retrofit.Builder retrofitBuilder, OkHttpClient okHttpClient, OkHttpClient.Builder okHttpClientBuilder, boolean isJson) {
+    public LeopardClient(BaseServerApi serverApi, Retrofit retrofit, Retrofit.Builder retrofitBuilder, OkHttpClient okHttpClient, OkHttpClient.Builder okHttpClientBuilder, boolean isJson) {
         this.serverApi = serverApi;
         this.retrofit = retrofit;
         this.retrofitBuilder = retrofitBuilder;
@@ -145,7 +145,7 @@ public class RetrofitHttp {
             RequestBody body =
                     RequestBody.create(dataMediaType, file);
 
-            UploadFileRequestBody body_up = new UploadFileRequestBody(body, new ProgressListener() {
+            UploadFileRequestBody body_up = new UploadFileRequestBody(body, new IProgress() {
                 @Override
                 public void onProgress(long progress, long total, boolean done) {
                     if (done) {
@@ -298,7 +298,7 @@ public class RetrofitHttp {
             return this;
         }
 
-        public RetrofitHttp build() {
+        public LeopardClient build() {
             if (this.requestJsonFactory != null) {
                 okHttpClientBuilder.addInterceptor(this.requestJsonFactory);
             }
@@ -333,7 +333,7 @@ public class RetrofitHttp {
 
             serverApi = retrofit.create(BaseServerApi.class);
 
-            return new RetrofitHttp(serverApi, retrofit, retrofitBuilder, okHttpClient, okHttpClientBuilder, isJson);
+            return new LeopardClient(serverApi, retrofit, retrofitBuilder, okHttpClient, okHttpClientBuilder, isJson);
         }
 
     }

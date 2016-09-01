@@ -2,7 +2,7 @@ package com.yuan.leopardkit.http.base;
 
 /**
  * Created by Yuan on 2016/9/1.
- * Detail 请求方式
+ * Detail 自定义请求资源 url
  */
 public enum HttpMethod {
 

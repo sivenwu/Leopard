@@ -3,7 +3,7 @@ package com.yuan.leopardkit.download.task;
 import com.yuan.leopardkit.db.HttpDbUtil;
 import com.yuan.leopardkit.download.DownLoadManager;
 import com.yuan.leopardkit.download.model.DownloadInfo;
-import com.yuan.leopardkit.http.RetrofitHttp;
+import com.yuan.leopardkit.http.LeopardClient;
 import com.yuan.leopardkit.http.factory.DownLoadFileFactory;
 import com.yuan.leopardkit.interfaces.FileRespondResult;
 
@@ -76,8 +76,8 @@ public class DownLoadTask {
     }
 
 
-    private RetrofitHttp getClient() {
-        return new RetrofitHttp.Builder()
+    private LeopardClient getClient() {
+        return new LeopardClient.Builder()
                 .addRxJavaCallAdapterFactory(RxJavaCallAdapterFactory.create())
                 .addDownLoadFileFactory(DownLoadFileFactory.create(this.fileRespondResult, this.downloadInfo, startPoints))
                 .build();

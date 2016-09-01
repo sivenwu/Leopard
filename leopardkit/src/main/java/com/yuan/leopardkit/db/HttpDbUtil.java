@@ -60,7 +60,7 @@ public class HttpDbUtil {
     }
 
     public List<FileModel> queryFileInfo() {
-        List<FileModel> data = checkNULL().modelDao.queryRaw("where 1", null);
+        List<FileModel> data = checkNULL().modelDao.queryRaw("where 1", "",null);
         return data;
     }
 
