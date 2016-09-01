@@ -35,4 +35,7 @@ dependencies {
     compile 'com.trello:rxlifecycle:0.6.1'
     compile 'com.trello:rxlifecycle-components:0.6.1'
 
+    //db
+    compile 'de.greenrobot:greendao:2.1.0'
+
 }

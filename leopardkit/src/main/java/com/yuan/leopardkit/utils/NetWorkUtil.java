@@ -12,8 +12,8 @@ import android.telephony.TelephonyManager;
 import java.util.List;
 
 /**
- * 通用网络工具类
- * Created by wsy on 16/7/14.
+ * Created by Yuan on 2016/9/1.
+ *  通用网络工具类
  */
 public class NetWorkUtil {
 

@@ -8,9 +8,10 @@ import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
 
+
 /**
- * json model 转化工具
- * Created by wsy on 16/7/14.
+ * Created by Yuan on 2016/9/1.
+ *  json model 转化工具
  */
 public class JsonParseUtil {
 
