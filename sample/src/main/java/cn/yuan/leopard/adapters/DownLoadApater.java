@@ -132,9 +132,9 @@ public class DownLoadApater extends RecyclerView.Adapter<DownLoadApater.MyViewHo
         }
 
         public void resetProgress() {
-            long breakProgress = 0;
-            long currentProgress = 0;
-            long realSumSize = 0;
+             breakProgress = 0;
+             currentProgress = 0;
+             realSumSize = 0;
         }
     }
 }
