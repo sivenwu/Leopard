@@ -1,5 +1,6 @@
 package com.yuan.leopardkit.download.model;
 
+import com.yuan.leopardkit.download.DownLoadManager;
 import com.yuan.leopardkit.download.task.DownLoadSubscriber;
 import com.yuan.leopardkit.download.task.DownLoadTask;
 import com.yuan.leopardkit.models.FileLoadInfo;
@@ -16,6 +17,8 @@ public class DownloadInfo extends FileLoadInfo {
 
 
     public DownloadInfo() {
+        this.setState(DownLoadManager.STATE_WAITING);
+        this.setType(0);
     }
 
     public DownLoadSubscriber getSubscriber() {

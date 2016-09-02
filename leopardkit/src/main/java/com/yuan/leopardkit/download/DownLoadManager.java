@@ -47,7 +47,6 @@ public class DownLoadManager {
     }
 
     public void addTask(DownloadInfo downloadInfo, FileRespondResult listener){
-        downloadInfo.setState(STATE_WAITING);//准备下载
         if (downloadInfo.getFileSavePath() == null || downloadInfo.getFileSavePath().equals("")){
             downloadInfo.setFileSavePath(deFaultDir);
         }
@@ -60,9 +59,27 @@ public class DownLoadManager {
     }
 
     public void removeTask(DownloadInfo downloadInfo){
-        if (downloadInfosList.contains(downloadInfo))
-        downloadInfosList.remove(downloadInfo);
+        if (downloadInfosList.contains(downloadInfo)) {
+            downloadInfosList.remove(downloadInfo);
+            File downFile = new File(downloadInfo.getFileSavePath() + downloadInfo.getFileName());
+            if (downFile.exists()){
+                downFile.delete();
+            }
+        }
         HttpDbUtil.instance.delete(downloadInfo);
+    }
+
+    public void removeAllTask(){
+        for (DownloadInfo downloadInfo : downloadInfosList){
+            downloadInfo.getDownLoadTask().remove();
+        }
+        downloadInfosList.clear();
+    }
+
+    public void pauseAllTask(){
+        for (DownloadInfo downloadInfo : downloadInfosList){
+            downloadInfo.getDownLoadTask().pause();
+        }
     }
 
     public void restartAllTask(){

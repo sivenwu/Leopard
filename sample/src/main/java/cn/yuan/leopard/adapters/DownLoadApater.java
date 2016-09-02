@@ -10,6 +10,8 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.yuan.leopardkit.LeopardHttp;
+import com.yuan.leopardkit.download.DownLoadManager;
+import com.yuan.leopardkit.download.model.DownloadInfo;
 import com.yuan.leopardkit.interfaces.IProgress;
 
 import java.math.BigDecimal;
@@ -40,61 +42,99 @@ public class DownLoadApater extends RecyclerView.Adapter<DownLoadApater.MyViewHo
 
     @Override
     public void onBindViewHolder(final MyViewHolder holder, final int position) {
-        holder.downBtn.setOnClickListener(new View.OnClickListener() {
+
+        final DownloadInfo info = data.get(position).getInfo();
+
+        holder.progressBar.setMax((int) info.getFileLength());
+        holder.progressBar.setProgress((int) info.getProgress());
+        holder.progressShow.setText((int) ((float) info.getProgress() / info.getFileLength() * 100) + "%");
+
+        //按钮更新
+        if (info.getState() == DownLoadManager.STATE_FINISH) {
+            holder.downBtn.setText("重新開始");
+            holder.prgressTv.setText(Double.toString(getRealNum(info.getProgress()/1024/1024)) + "MB/"
+                    + Double.toString(getRealNum( info.getFileLength()/1024/1024)) + "MB"+" 下载完成");
+        }
+
+        if (info.getState() == DownLoadManager.STATE_WAITING) {
+            holder.downBtn.setText("下载");
+        }
+
+        if (info.getState() == DownLoadManager.STATE_PAUSE) {
+            holder.downBtn.setText("继续");
+        }
+
+        if (info.getState() == DownLoadManager.STATE_DOWNLOADING) {
+            holder.downBtn.setText("暂停");
+        }
+
+        //add task
+        LeopardHttp.DWONLOAD(info, new IProgress() {
             @Override
-            public void onClick(View v) {
-                if (holder.state == 0) {
-                    holder.resetProgress();
-                    holder.state = 2;
+            public void onProgress(long progress, long total, boolean done) {
+
+                //按钮更新
+
+                if (info.getState() == DownLoadManager.STATE_WAITING) {
+                    holder.downBtn.setText("下载");
+                }
+
+                if (info.getState() == DownLoadManager.STATE_PAUSE) {
+                    holder.downBtn.setText("继续");
+                }
+
+                if (info.getState() == DownLoadManager.STATE_DOWNLOADING) {
                     holder.downBtn.setText("暂停");
-                    LeopardHttp.DWONLOAD(data.get(position).getInfo(), new IProgress() {
-                        @Override
-                        public void onProgress(long progress, long total, boolean done) {
-                            if (holder.currentProgress == 0) {
-                                holder.realSumSize = total;
-                            }
+                }
 
-                            if ( holder.state == 1){
-                                return ;//防止異步影響
-                            }
+                holder.progressBar.setMax((int) total);
+                holder.progressBar.setProgress((int) progress);
+                holder.progressShow.setText((int) ((float) progress / total * 100) + "%");
+                double curP = 0;
+                double curTotal = 0;
+                if (progress / 1024L < 1024L) {
+                    curP = (double) progress / 1024;
+                    curTotal = (double) total / 1024L / 1024L;
+                    holder.prgressTv.setText(Double.toString(getRealNum(curP)) + "KB/" + Double.toString(getRealNum(curTotal)) + "MB"
+                    );
+                } else {
+                    curP = (double) progress / 1024L / 1024L;
+                    curTotal = (double) total / 1024L / 1024L;
+                    holder.prgressTv.setText(Double.toString(getRealNum(curP)) + "MB/" + Double.toString(getRealNum(curTotal)) + "MB"
+                    );
+                }
+                if (done) {
+                    holder.downBtn.setText("重新開始");
+                    holder.prgressTv.setText(holder.prgressTv.getText() + " 下載完成！");
+                }
+            }
+        });
 
-                            holder.currentProgress = progress+ holder.breakProgress;
-                            holder.progressBar.setMax((int) holder.realSumSize );
-                            holder.progressBar.setProgress((int)  holder.currentProgress);
 
-                            double curP = 0;
-                            double curTotal = 0;
-                            if (holder.currentProgress / 1024L < 1024L) {
-                                curP = (double) holder.currentProgress / 1024;
-                                curTotal = (double) holder.realSumSize / 1024L / 1024L;
-                                holder.prgressTv.setText(Double.toString(getRealNum(curP)) + "KB/" + Double.toString(getRealNum(curTotal)) + "MB");
-                            } else {
-                                curP = (double) holder.currentProgress / 1024L / 1024L;
-                                curTotal = (double) holder.realSumSize / 1024L / 1024L;
-                                holder.prgressTv.setText(Double.toString(getRealNum(curP)) + "MB/" + Double.toString(getRealNum(curTotal)) + "MB");
-                            }
-                            if (done) {
-                                holder.downBtn.setText("重新開始");
-                                holder.state = 0;
-                                holder.prgressTv.setText(holder.prgressTv.getText() +" 下載完成！");
-                            }
-                        }
-                    });
+        holder.downBtn.setOnClickListener(new View.OnClickListener() {
+
+            public void onClick(View v) {
+
+                if (info.getState() == DownLoadManager.STATE_FINISH) {
+                    holder.downBtn.setText("暫停");
+                    info.getDownLoadTask().reStart();
+                }
+
+                if (info.getState() == DownLoadManager.STATE_WAITING) {
+                    holder.downBtn.setText("暂停");
+                    info.getDownLoadTask().reStart();
                     return;
                 }
 
-                if (holder.state == 1) {
-                    holder.state = 2;
+                if (info.getState() == DownLoadManager.STATE_PAUSE) {
                     holder.downBtn.setText("暫停");
                     data.get(position).getInfo().getDownLoadTask().resume();
                     return;
                 }
 
-                if (holder.state == 2) {
-                    holder.state = 1;
+                if (info.getState() == DownLoadManager.STATE_DOWNLOADING) {
                     holder.downBtn.setText("继续");
-                    holder.breakProgress = holder.currentProgress;
-                    data.get(position).getInfo().getDownLoadTask().pause(holder.breakProgress);
+                    data.get(position).getInfo().getDownLoadTask().pause();
                     return;
                 }
             }
@@ -109,32 +149,23 @@ public class DownLoadApater extends RecyclerView.Adapter<DownLoadApater.MyViewHo
     //获取保留的两位数
     private double getRealNum(double num) {
         BigDecimal bg = new BigDecimal(num);
-        return bg.setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue();
+        return bg.setScale(1, BigDecimal.ROUND_HALF_UP).doubleValue();
     }
 
     class MyViewHolder extends RecyclerView.ViewHolder {
 
-        public int state = 0;//0重新开始 1暂停 2 继续
-
-        public long breakProgress = 0;
-        public long currentProgress = 0;
-        public long realSumSize = 0;
-
         public Button downBtn;
         public ProgressBar progressBar;
         public TextView prgressTv;
+        public TextView progressShow;
 
         public MyViewHolder(View itemView) {
             super(itemView);
             downBtn = (Button) itemView.findViewById(R.id.down_btn);
             progressBar = (ProgressBar) itemView.findViewById(R.id.down_pb);
             prgressTv = (TextView) itemView.findViewById(R.id.down_txt_pb);
+            progressShow = (TextView) itemView.findViewById(R.id.down_progress);
         }
 
-        public void resetProgress() {
-             breakProgress = 0;
-             currentProgress = 0;
-             realSumSize = 0;
-        }
     }
 }

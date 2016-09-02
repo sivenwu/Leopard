@@ -11,7 +11,7 @@ public class FileLoadInfo {
 
     private int type;// 0 下载 1上传
 
-    private int state;
+    private int state = 1;//默认是1
 
     private String url;
 
@@ -20,6 +20,8 @@ public class FileLoadInfo {
     private String fileSavePath;
 
     private long progress;
+
+    private long breakProgress;//记录断点位置
 
     private long fileLength;
 
@@ -79,6 +81,14 @@ public class FileLoadInfo {
 
     public void setFileSavePath(String fileSavePath) {
         this.fileSavePath = fileSavePath;
+    }
+
+    public long getBreakProgress() {
+        return breakProgress;
+    }
+
+    public void setBreakProgress(long breakProgress) {
+        this.breakProgress = breakProgress;
     }
 
     public long getProgress() {

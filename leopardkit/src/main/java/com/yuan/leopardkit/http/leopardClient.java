@@ -170,12 +170,15 @@ public class LeopardClient {
         Observable.create(new Observable.OnSubscribe<ResponseBody>() {
             @Override
             public void call(Subscriber<? super ResponseBody> subscriber) {
+                if (downloadInfo.getState() == DownLoadManager.STATE_PAUSE){//如果暂停就不请求了
+                    return ;
+                }
                 Request request = new Request.Builder().url(downloadInfo.getUrl()).build();
                 try {
                     Response response = okHttpClient.newCall(request).execute();
+                    if (downloadInfo.getFileLength() <= 0)
                     downloadInfo.setFileLength(response.body().contentLength());
                     downloadInfo.getDownLoadTask().writeCache(response.body().byteStream());
-                    downloadInfo.setState(DownLoadManager.STATE_DOWNLOADING);
                     // TODO: 2016/8/31 更新数据库 这里记得做下数据库延时更新
                     HttpDbUtil.instance.updateState(downloadInfo);
                     subscriber.onNext(response.body());
@@ -187,7 +190,10 @@ public class LeopardClient {
                 }
             }
         })
-                .compose(schedulersTransformer)
+                //避免doing too much work on its main thread.
+                .onBackpressureBuffer()
+                .subscribeOn(Schedulers.computation())
+                .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(new DownLoadSubscriber(callback,downloadInfo,task));
     }
 

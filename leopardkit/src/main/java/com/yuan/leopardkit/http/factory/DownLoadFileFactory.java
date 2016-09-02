@@ -18,15 +18,13 @@ public class DownLoadFileFactory implements Interceptor {
 
     private FileRespondResult fileRespondResult;
     private DownloadInfo downloadInfo;
-    private long startPoints = 0L;
 
     public DownLoadFileFactory() {
     }
 
-    public DownLoadFileFactory(FileRespondResult fileRespondResult, DownloadInfo downloadInfo, long startPoints) {
+    public DownLoadFileFactory(FileRespondResult fileRespondResult, DownloadInfo downloadInfo) {
         this.fileRespondResult = fileRespondResult;
         this.downloadInfo = downloadInfo;
-        this.startPoints = startPoints;
     }
 
     public void setDownloadInfo(DownloadInfo downloadInfo) {
@@ -39,9 +37,9 @@ public class DownLoadFileFactory implements Interceptor {
 
     @Override
     public Response intercept(Chain chain) throws IOException {
-        Request request = chain.request().newBuilder().addHeader("RANGE", "bytes=" + startPoints + "-").build();
+        Request request = chain.request().newBuilder().addHeader("RANGE", "bytes=" + downloadInfo.getBreakProgress() + "-").build();
         Response originalResponse = chain.proceed(request);
-        DownLoadResponseBody body = new DownLoadResponseBody(originalResponse.body(), fileRespondResult);
+        DownLoadResponseBody body = new DownLoadResponseBody(this.downloadInfo ,originalResponse.body(), fileRespondResult);
         Response response = originalResponse.newBuilder().body(body).build();
         return response;
     }
@@ -50,8 +48,8 @@ public class DownLoadFileFactory implements Interceptor {
         return new DownLoadFileFactory();
     }
 
-    public static DownLoadFileFactory create(FileRespondResult fileRespondResult, DownloadInfo downloadInfo, long startPoints) {
-        return new DownLoadFileFactory(fileRespondResult, downloadInfo, startPoints);
+    public static DownLoadFileFactory create(FileRespondResult fileRespondResult, DownloadInfo downloadInfo) {
+        return new DownLoadFileFactory(fileRespondResult, downloadInfo);
     }
 
 }

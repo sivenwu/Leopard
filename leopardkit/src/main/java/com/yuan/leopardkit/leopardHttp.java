@@ -74,12 +74,13 @@ public class LeopardHttp {
      * @param iProgress
      * @return 拥有Task的下载实体
      */
-    public static DownloadInfo DWONLOAD(DownloadInfo downloadInfo, final IProgress iProgress){
+    public static DownloadInfo DWONLOAD(final DownloadInfo downloadInfo, final IProgress iProgress){
         final Handler handler = new Handler(Looper.getMainLooper()){
             @Override
             public void handleMessage(Message msg) {
                 super.handleMessage(msg);
-                iProgress.onProgress(msg.arg1,msg.arg2,msg.arg1 == msg.arg2);
+                if (downloadInfo.getState() != DownLoadManager.STATE_WAITING)
+                iProgress.onProgress(msg.arg1,msg.arg2,msg.arg1 >= msg.arg2);
             }
         };
 
