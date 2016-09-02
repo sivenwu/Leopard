@@ -135,8 +135,7 @@ public class LeopardClient {
 
     long curUploadProgress = 0;
 
-    public void upLoadFiles(Context context, final FileUploadEnetity enetity, final FileRespondResult callback) {
-        mContext = context;
+    public void upLoadFiles(final FileUploadEnetity enetity, final FileRespondResult callback) {
         curUploadProgress = 0;
         List<File> files = enetity.getFiles();
         HashMap<String, RequestBody> params = new HashMap<>();

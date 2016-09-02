@@ -28,7 +28,7 @@ public class DownLoadManager {
     public static final int STATE_FINISH = 4;       //完成    --> 重新下载
     public static final int STATE_ERROR = 5;        //错误    --> 等待
 
-    private final String deFaultDir = Environment.getExternalStorageDirectory() + "/YuanDwonload/";
+    public String deFaultDir = Environment.getExternalStorageDirectory() + "/YuanDwonload/";
 
     private FileRespondResult callback;
     private List<DownloadInfo> downloadInfosList;
@@ -42,6 +42,7 @@ public class DownLoadManager {
 
     public DownLoadManager() {
         //初始化一系列
+        deFaultDir = Environment.getExternalStorageDirectory() + "/YuanDwonload/";
         downloadInfosList = new ArrayList<>();
         if (!new File(deFaultDir).exists()) new File(deFaultDir).mkdirs();
     }

@@ -45,6 +45,8 @@ public class DownloadFragment extends Fragment implements View.OnClickListener {
 
     private void initView(View view) {
 
+        pathShowTv = (TextView) view.findViewById(R.id.down_path_tv);
+        pathShowTv.setText(pathShowTv.getText().toString()+" "+DownLoadManager.getManager().deFaultDir);
         startAllBtn = (Button) view.findViewById(R.id.down_start_all_btn);
         stopAllBtn = (Button) view.findViewById(R.id.down_stop_all_btn);
         pauseAllBtn = (Button) view.findViewById(R.id.down_pause_all_btn);
@@ -82,7 +84,7 @@ public class DownloadFragment extends Fragment implements View.OnClickListener {
             DownloadInfo info = new DownloadInfo();
             info.setUrl(url);
             info.setProgress(0L);
-            info.setFileName("cn.wsy.travel_" + i + ".apk");
+            info.setFileName("IRecord_" + i + ".apk");
             DownLoadModel model = new DownLoadModel();
             model.setInfo(info);
             data.add(model);
