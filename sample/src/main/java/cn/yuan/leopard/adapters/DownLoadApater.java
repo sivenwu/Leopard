@@ -23,7 +23,7 @@ import cn.yuan.leopard.model.DownLoadModel;
 
 /**
  * Created by Yuan on 2016/9/1.
- * Detail
+ * Detail 下载适配器
  */
 public class DownLoadApater extends RecyclerView.Adapter<DownLoadApater.MyViewHolder> {
 

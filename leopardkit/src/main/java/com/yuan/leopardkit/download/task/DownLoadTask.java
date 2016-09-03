@@ -45,7 +45,7 @@ public class DownLoadTask {
     public void stop() {
         this.downloadInfo.setState(DownLoadManager.STATE_WAITING);
         if (this.downloadInfo!=null &&this.downloadInfo.getSubscriber() != null)
-        this.downloadInfo.getSubscriber().unsubscribe();
+            this.downloadInfo.getSubscriber().unsubscribe();
         fileRespondResult.onExecuting(0L,downloadInfo.getFileLength(),false);
         if (this.downloadInfo.getState() != DownLoadManager.STATE_FINISH){
             resetProgress();
@@ -67,7 +67,8 @@ public class DownLoadTask {
     public void pause() {
         downloadInfo.setState(DownLoadManager.STATE_PAUSE);
         downloadInfo.setBreakProgress(downloadInfo.getProgress());//记录断点位置;
-        this.downloadInfo.getSubscriber().unsubscribe();
+        if (this.downloadInfo!=null &&this.downloadInfo.getSubscriber() != null)
+            this.downloadInfo.getSubscriber().unsubscribe();
         //// TODO: 2016/8/31 更新数据库
         HttpDbUtil.instance.updateState(downloadInfo);
     }
@@ -81,9 +82,14 @@ public class DownLoadTask {
     }
 
     public void download( boolean isRestart) {
+
+        if (downloadInfo.getState() == DownLoadManager.STATE_DOWNLOADING)return;
+
+        if (downloadInfo.getState() == DownLoadManager.STATE_FINISH && !isRestart) return;
         downloadInfo.setState(DownLoadManager.STATE_DOWNLOADING);
         isStart = isRestart;
         if (isRestart) {
+            stop();
             resetProgress();
             startPoints = 0L;
         }

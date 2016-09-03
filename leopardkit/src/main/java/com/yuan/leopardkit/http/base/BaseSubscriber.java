@@ -6,6 +6,8 @@ import com.yuan.leopardkit.interfaces.HttpRespondResult;
 
 import java.io.IOException;
 
+import okhttp3.RequestBody;
+import okhttp3.Response;
 import okhttp3.ResponseBody;
 import rx.Subscriber;
 
@@ -36,7 +38,8 @@ public class BaseSubscriber<T extends ResponseBody> extends Subscriber<T> {
 
     @Override
     public void onError(Throwable e) {
-        callback.onFailure(e, e.getMessage().toString());
+        callback.onFailure(e, "subscriber error: "+e.getMessage().toString());
+        callback.onAfterViewAction();
     }
 
     @Override
@@ -46,6 +49,8 @@ public class BaseSubscriber<T extends ResponseBody> extends Subscriber<T> {
             callback.onSuccess(jsonString);
         } catch (IOException e) {
             e.printStackTrace();
+            callback.onAfterViewAction();
+            callback.onFailure(e, e.getMessage().toString());
         }
     }
 }

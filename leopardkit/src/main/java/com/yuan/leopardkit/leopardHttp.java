@@ -12,6 +12,7 @@ import com.yuan.leopardkit.download.model.DownloadInfo;
 import com.yuan.leopardkit.http.LeopardClient;
 import com.yuan.leopardkit.http.base.BaseEnetity;
 import com.yuan.leopardkit.http.base.HttpMethod;
+import com.yuan.leopardkit.http.factory.RequestComFactory;
 import com.yuan.leopardkit.http.factory.RequestJsonFactory;
 import com.yuan.leopardkit.http.factory.UploadFileFactory;
 import com.yuan.leopardkit.interfaces.FileRespondResult;
@@ -44,8 +45,9 @@ public class LeopardHttp {
         HttpDbUtil.initHttpDB(context.getApplicationContext());
     }
 
-    private static LeopardClient.Builder getBuilder() {
+    private static LeopardClient.Builder getBuilder(HttpRespondResult respondResult) {
         return new LeopardClient.Builder()
+                .addRequestComFactory(new RequestComFactory(respondResult))
                 .addGsonConverterFactory(GsonConverterFactory.create())
                 .addRxJavaCallAdapterFactory(RxJavaCallAdapterFactory.create())
                 .baseUrl(ADDRESS);
@@ -111,18 +113,20 @@ public class LeopardHttp {
             }
         };
 
-        getBuilder()
+        FileRespondResult respondResult =  new FileRespondResult() {
+            @Override
+            public void onExecuting(long progress, long total, boolean done) {
+                Message message = new Message();
+                message.arg1 = (int) progress;
+                message.arg2 = (int) total;
+                handler.sendMessage(message);
+            }
+        };
+
+        getBuilder(respondResult)
                 .addUploadFileFactory(UploadFileFactory.create())
                 .build()
-                .upLoadFiles(uploadEnetity, new FileRespondResult() {
-                    @Override
-                    public void onExecuting(long progress, long total, boolean done) {
-                        Message message = new Message();
-                        message.arg1 = (int) progress;
-                        message.arg2 = (int) total;
-                        handler.sendMessage(message);
-                    }
-                });
+                .upLoadFiles(uploadEnetity,respondResult);
 
     }
 
@@ -151,27 +155,27 @@ public class LeopardHttp {
 
 
     private static void POST(Context context, BaseEnetity enetity, HttpRespondResult httpRespondResult) {
-        getBuilder()
+        getBuilder(httpRespondResult)
                 .build()
                 .POST(context, enetity, httpRespondResult);
     }
 
     private static void POST(Context context, BaseEnetity enetity, HashMap<String, String> header, HttpRespondResult httpRespondResult) {
-        getBuilder()
+        getBuilder(httpRespondResult)
                 .addHeader(header)
                 .build()
                 .POST(context, enetity, httpRespondResult);
     }
 
     private static void POSTJson(Context context, BaseEnetity enetity, HttpRespondResult httpRespondResult) {
-        getBuilder()
+        getBuilder(httpRespondResult)
                 .addRequestJsonFactory(RequestJsonFactory.create())
                 .build()
                 .POST(context, enetity, httpRespondResult);
     }
 
     private static void POSTJson(Context context, BaseEnetity enetity, HashMap<String, String> header, HttpRespondResult httpRespondResult) {
-        getBuilder()
+        getBuilder(httpRespondResult)
                 .addHeader(header)
                 .addRequestJsonFactory(RequestJsonFactory.create())
                 .build()
@@ -179,27 +183,27 @@ public class LeopardHttp {
     }
 
     private static void GET(Context context, BaseEnetity enetity, HashMap<String, String> header, HttpRespondResult httpRespondResult) {
-        getBuilder()
+        getBuilder(httpRespondResult)
                 .addHeader(header)
                 .build()
                 .GET(context, enetity, httpRespondResult);
     }
 
     private static void GET(Context context, BaseEnetity enetity, HttpRespondResult httpRespondResult) {
-        getBuilder()
+        getBuilder(httpRespondResult)
                 .build()
                 .GET(context, enetity, httpRespondResult);
     }
 
     private static void GETjson(Context context, BaseEnetity enetity, HttpRespondResult httpRespondResult) {
-        getBuilder()
+        getBuilder(httpRespondResult)
                 .addRequestJsonFactory(RequestJsonFactory.create())
                 .build()
                 .GET(context, enetity, httpRespondResult);
     }
 
     private static void GETjson(Context context, BaseEnetity enetity, HashMap<String, String> header, HttpRespondResult httpRespondResult) {
-        getBuilder()
+        getBuilder(httpRespondResult)
                 .addHeader(header)
                 .addRequestJsonFactory(RequestJsonFactory.create())
                 .build()

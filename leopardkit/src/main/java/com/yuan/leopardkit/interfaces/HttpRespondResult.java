@@ -3,6 +3,8 @@ package com.yuan.leopardkit.interfaces;
 import android.content.Context;
 
 import cn.yuan.leopardkit.R;
+import okhttp3.Request;
+import okhttp3.Response;
 
 
 /**
@@ -16,6 +18,9 @@ public abstract class HttpRespondResult implements IHttpLoading {
 
     private boolean isShowLoad = false;
     private String loadMessage;
+
+    private Response response;
+    private Request request;
 
     public HttpRespondResult() {
 
@@ -49,6 +54,22 @@ public abstract class HttpRespondResult implements IHttpLoading {
         if (isShowLoad && (mLoadViewCallBack!=null)){
             mLoadViewCallBack.onFinshLoading();
         }
+    }
+
+    public Response getResponse() {
+        return response;
+    }
+
+    public void setResponse(Response response) {
+        this.response = response;
+    }
+
+    public Request getRequest() {
+        return request;
+    }
+
+    public void setRequest(Request request) {
+        this.request = request;
     }
 
     //向外抛出的两个方法

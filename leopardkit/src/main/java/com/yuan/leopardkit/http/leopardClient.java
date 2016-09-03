@@ -12,6 +12,7 @@ import com.yuan.leopardkit.http.base.BaseEnetity;
 import com.yuan.leopardkit.http.base.BaseSubscriber;
 import com.yuan.leopardkit.http.factory.DownLoadFileFactory;
 import com.yuan.leopardkit.http.factory.HeaderAddFactory;
+import com.yuan.leopardkit.http.factory.RequestComFactory;
 import com.yuan.leopardkit.http.factory.RequestJsonFactory;
 import com.yuan.leopardkit.http.factory.UploadFileFactory;
 import com.yuan.leopardkit.interfaces.FileRespondResult;
@@ -103,6 +104,7 @@ public class LeopardClient {
         mContext = context;
         if (isJson) {
             String json = JsonParseUtil.modeToJson(entity);
+            Log.i("yuan", fiterURLFromJSON(json));
             RequestBody body = RequestBody.create(jsonMediaType, fiterURLFromJSON(json));
             serverApi
                     .getJSON(entity.getRuqestURL(), body)
@@ -246,6 +248,7 @@ public class LeopardClient {
         private RequestJsonFactory requestJsonFactory;
         private UploadFileFactory uploadFileFactory;
         private DownLoadFileFactory downLoadFileFactory;
+        private RequestComFactory requestComFactory;
 
         public Builder() {
             retrofitBuilder = new Retrofit.Builder();
@@ -264,6 +267,11 @@ public class LeopardClient {
 
         public Builder isLog(boolean isLog) {
             this.isLog = isLog;
+            return this;
+        }
+
+        public Builder addRequestComFactory(RequestComFactory factory){
+            this.requestComFactory = factory;
             return this;
         }
 
@@ -304,6 +312,10 @@ public class LeopardClient {
         }
 
         public LeopardClient build() {
+            if (this.requestComFactory != null){
+                okHttpClientBuilder.addInterceptor(this.requestComFactory);
+            }
+
             if (this.requestJsonFactory != null) {
                 okHttpClientBuilder.addInterceptor(this.requestJsonFactory);
             }

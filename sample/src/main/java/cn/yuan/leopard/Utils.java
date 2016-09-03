@@ -5,6 +5,8 @@ import android.graphics.BitmapFactory;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 /**
  * Created by Yuan on 2016/9/2.
@@ -58,6 +60,15 @@ public class Utils {
         //重新读入图片，注意此时已经把options.inJustDecodeBounds 设回false了
         bitmap = BitmapFactory.decodeFile(srcPath, newOpts);
         return compressImage(bitmap);//压缩好比例大小后再进行质量压缩
+    }
+
+    /**
+     * 获取当前时间
+     * @return
+     */
+    public static String getNowTime(){
+        SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd,HH:mm:ss");//设置日期格式
+        return  df.format(new Date());
     }
 
 }

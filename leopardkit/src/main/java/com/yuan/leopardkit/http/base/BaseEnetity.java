@@ -11,6 +11,9 @@ import java.util.Map;
  */
 public abstract class BaseEnetity {
 
+    public BaseEnetity() {
+    }
+
     /**
      * 获取请求链接
      *

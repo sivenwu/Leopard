@@ -10,12 +10,14 @@ import com.yuan.leopardkit.http.base.BaseEnetity;
 public class RequestGetJsonModel extends BaseEnetity{
     @Override
     public String getRuqestURL() {
-        return "sample/postJson.php";
+        return "sample/getJson.php";
     }
-
 
     private String data;
     private String time;
+
+    public RequestGetJsonModel() {
+    }
 
     public RequestGetJsonModel(String data, String time) {
         this.data = data;

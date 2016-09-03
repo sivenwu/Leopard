@@ -8,13 +8,14 @@ import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 
 import com.yuan.leopardkit.LeopardHttp;
+import com.yuan.leopardkit.ui.activitys.LeopardActivity;
 
 import cn.yuan.leopard.fragments.MainTabFragment;
 import cn.yuan.leopard.fragments.RquestFragment;
 import cn.yuan.leopard.fragments.DownloadFragment;
 import cn.yuan.leopard.fragments.UploadFragment;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends LeopardActivity {
 
     private TabLayout tabLayout;
     private MainTabFragment mainTabFragment;
@@ -24,7 +25,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        LeopardHttp.init("http://192.168.244.6",this);
+        LeopardHttp.init("http://wxwusy.applinzi.com/leopardWeb/app/",this);
         initView();
     }
 
@@ -45,6 +46,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void loadFinishView(ViewPager viewPager, FragmentPagerAdapter mAdapter) {
                 mViewPager = viewPager;
+                mViewPager.setOffscreenPageLimit(2);//缓存多一个fragmemt
                 tabLayout.setupWithViewPager(mViewPager);
                 tabLayout.setTabsFromPagerAdapter(mAdapter);
             }
