@@ -5,7 +5,7 @@
     android:orientation="vertical">
 
     <TextView
-        android:id="@+id/down_pathtv"
+        android:id="@+id/down_path_tv"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:padding="5dp"
@@ -29,28 +29,28 @@
         android:weightSum="4">
 
         <Button
-            android:id="@+id/down_deleteall_btn"
+            android:id="@+id/down_delete_all_btn"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:text="删除所有" />
 
         <Button
-            android:id="@+id/down_pauseall_btn"
+            android:id="@+id/down_pause_all_btn"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:text="暂停所有" />
 
         <Button
-            android:id="@+id/down_stopall_btn"
+            android:id="@+id/down_stop_all_btn"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:text="停止所有" />
 
         <Button
-            android:id="@+id/down_startall_btn"
+            android:id="@+id/down_start_all_btn"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"

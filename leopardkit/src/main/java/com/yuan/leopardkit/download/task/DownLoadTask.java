@@ -24,6 +24,7 @@ public class DownLoadTask {
 
     private final String TAG = "DownLoadTask";
 
+    private String fileCacheNem = ".cache";
     private int tagKey;//所有任务通过这个key来区别
     private int taskState;//当前任务状态
     private long startPoints = 0L;//记录当前断点位置
@@ -36,29 +37,40 @@ public class DownLoadTask {
         this.downloadInfo = downloadInfo;
         taskState = this.downloadInfo.getState();
         this.fileRespondResult = fileRespondResult;
-//        download(true);
     }
 
+    /**
+     * 停止下载，为了再次重新下载
+     */
     public void stop() {
+        this.downloadInfo.setState(DownLoadManager.STATE_WAITING);
+        if (this.downloadInfo!=null &&this.downloadInfo.getSubscriber() != null)
         this.downloadInfo.getSubscriber().unsubscribe();
-        resetProgress();
+        fileRespondResult.onExecuting(0L,downloadInfo.getFileLength(),false);
         if (this.downloadInfo.getState() != DownLoadManager.STATE_FINISH){
-            File file = new File(downloadInfo.getFileSavePath() + downloadInfo.getFileName());
+            resetProgress();
+            File file = new File(downloadInfo.getFileSavePath() + downloadInfo.getFileName()+fileCacheNem);
             if (file.exists()) file.delete();
         }
-        // TODO: 2016/8/31 删除数据库记录
-//        HttpDbUtil.instance.delete(downloadInfo);
+//        if (this.downloadInfo.getState() == DownLoadManager.STATE_FINISH){
+//            resetProgress();
+//            File file = new File(downloadInfo.getFileSavePath() + downloadInfo.getFileName());
+//            if (file.exists()) file.delete()
+//        }
     }
 
-    public void pause(long startPoints) {
+    public void remove(){
+        stop();
+        HttpDbUtil.instance.delete(this.downloadInfo);
+    }
+
+    public void pause() {
         downloadInfo.setState(DownLoadManager.STATE_PAUSE);
-        this.startPoints = startPoints;
-        downloadInfo.setProgress(startPoints);
+        downloadInfo.setBreakProgress(downloadInfo.getProgress());//记录断点位置;
         this.downloadInfo.getSubscriber().unsubscribe();
         //// TODO: 2016/8/31 更新数据库
         HttpDbUtil.instance.updateState(downloadInfo);
     }
-
 
     public void resume(){
         download(false);
@@ -72,6 +84,7 @@ public class DownLoadTask {
         downloadInfo.setState(DownLoadManager.STATE_DOWNLOADING);
         isStart = isRestart;
         if (isRestart) {
+            resetProgress();
             startPoints = 0L;
         }
         getClient().downLoadFile(this.downloadInfo, this.fileRespondResult, this);
@@ -81,12 +94,12 @@ public class DownLoadTask {
     private LeopardClient getClient() {
         return new LeopardClient.Builder()
                 .addRxJavaCallAdapterFactory(RxJavaCallAdapterFactory.create())
-                .addDownLoadFileFactory(DownLoadFileFactory.create(this.fileRespondResult, this.downloadInfo, startPoints))
+                .addDownLoadFileFactory(DownLoadFileFactory.create(this.fileRespondResult, this.downloadInfo))
                 .build();
     }
 
     public void writeCache(InputStream inputStream){
-        String savePath = downloadInfo.getFileSavePath() + downloadInfo.getFileName();
+        String savePath = downloadInfo.getFileSavePath() + downloadInfo.getFileName() +fileCacheNem;
         File file = new File(savePath);
         if (isStart){//如果是重新下载
             if (file.exists()){
@@ -99,7 +112,7 @@ public class DownLoadTask {
         try {
             randomAccessFile = new RandomAccessFile(file, "rwd");
             channelOut = randomAccessFile.getChannel();
-            MappedByteBuffer mappedBuffer = channelOut.map(FileChannel.MapMode.READ_WRITE, downloadInfo.getProgress(), downloadInfo.getFileLength());
+            MappedByteBuffer mappedBuffer = channelOut.map(FileChannel.MapMode.READ_WRITE, downloadInfo.getBreakProgress(), downloadInfo.getFileLength()-downloadInfo.getBreakProgress());
             byte[] buffer = new byte[1024];
             int len;
             int record = 0;
@@ -107,10 +120,7 @@ public class DownLoadTask {
                 mappedBuffer.put(buffer, 0, len);
                 record += len;
             }
-        } catch (IOException e) {
-//            Log.i(TAG, "yuan" + e.getMessage());
-            e.printStackTrace();
-        } finally {
+
             try {
                 inputStream.close();
                 if (channelOut != null) {
@@ -122,6 +132,11 @@ public class DownLoadTask {
             } catch (IOException e) {
                 e.printStackTrace();
             }
+        } catch (IOException e) {
+//            Log.i(TAG, "yuan" + e.getMessage());
+            e.printStackTrace();
+        } finally {
+
         }
     }
 
@@ -130,12 +145,16 @@ public class DownLoadTask {
         downloadInfo.setState(DownLoadManager.STATE_FINISH);
         HttpDbUtil.instance.update(downloadInfo);
 
+        //更新文件
+        File file = new File(downloadInfo.getFileSavePath() + downloadInfo.getFileName() +fileCacheNem);
+        file.renameTo(new File(downloadInfo.getFileSavePath() + downloadInfo.getFileName()));
         fileRespondResult.onSuccess("");
     }
 
     private void resetProgress(){
-        startPoints = 0L;
-        this.downloadInfo.setProgress(0);
+        this.downloadInfo.setBreakProgress(0L);
+        this.downloadInfo.setProgress(0L);
+        this.downloadInfo.setFileLength(0L);
     }
 
 }

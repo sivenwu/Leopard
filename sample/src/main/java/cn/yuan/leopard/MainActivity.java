@@ -2,6 +2,7 @@ package cn.yuan.leopard;
 
 import android.os.Bundle;
 import android.support.design.widget.TabLayout;
+import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.app.FragmentStatePagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
@@ -23,7 +24,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        LeopardHttp.init("http://127.0.0.1",this);
+        LeopardHttp.init("http://192.168.244.6",this);
         initView();
     }
 
@@ -42,7 +43,7 @@ public class MainActivity extends AppCompatActivity {
             }
 
             @Override
-            public void loadFinishView(ViewPager viewPager, FragmentStatePagerAdapter mAdapter) {
+            public void loadFinishView(ViewPager viewPager, FragmentPagerAdapter mAdapter) {
                 mViewPager = viewPager;
                 tabLayout.setupWithViewPager(mViewPager);
                 tabLayout.setTabsFromPagerAdapter(mAdapter);

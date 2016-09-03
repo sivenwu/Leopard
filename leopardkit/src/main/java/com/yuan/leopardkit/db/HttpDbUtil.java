@@ -7,6 +7,7 @@ import android.util.Log;
 import com.yuan.leopardkit.db.dao.DaoMaster;
 import com.yuan.leopardkit.db.dao.DaoSession;
 import com.yuan.leopardkit.db.dao.FileModelDao;
+import com.yuan.leopardkit.download.model.DownloadInfo;
 import com.yuan.leopardkit.models.FileLoadInfo;
 
 import java.util.ArrayList;
@@ -59,9 +60,33 @@ public class HttpDbUtil {
         return instance;
     }
 
-    public List<FileModel> queryFileInfo() {
-        List<FileModel> data = checkNULL().modelDao.queryRaw("where 1", "",null);
-        return data;
+    public List<DownloadInfo> queryFileInfo(int type) {
+        List<DownloadInfo> downloadInfoList = new ArrayList<>();
+        List<FileModel> data = checkNULL().modelDao.queryRaw("where type = "+type,null);
+        for (FileModel model:data){
+            DownloadInfo info = new DownloadInfo();
+            info.setUrl(model.getUrl());
+            info.setKey(model.getKey());
+            info.setState(model.getState());
+            info.setFileLength(model.getFileLength());
+            info.setFileSavePath(model.getFileSavePath());
+            info.setType(model.getType());
+            info.setProgress(model.getProgress());
+            info.setBreakProgress(model.getProgress());
+            info.setFileName(model.getFileName());
+            downloadInfoList.add(info);
+        }
+        return downloadInfoList;
+    }
+
+    /**
+     * 檢查任務是不是已經存在
+     * @param key
+     * @return
+     */
+    public boolean queryIsExist(int key){
+        List<FileModel> data = checkNULL().modelDao.queryRaw("where key = "+key,null);
+        return data !=null && data.size() >0;
     }
 
     /**
@@ -71,6 +96,9 @@ public class HttpDbUtil {
      * @return key 行号
      */
     public long insert(FileLoadInfo info) {
+        if (info.getKey()!=0){
+            return info.getKey();
+        }
         long index = checkNULL().modelDao.insert(new FileModel(info.getType(), info.getState()
                 , info.getUrl(), info.getFileName(), info.getFileSavePath(), info.getProgress(), info.getFileLength()));
         return index;

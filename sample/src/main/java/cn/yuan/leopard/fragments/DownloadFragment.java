@@ -11,6 +11,7 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.TextView;
 
+import com.yuan.leopardkit.db.HttpDbUtil;
 import com.yuan.leopardkit.download.DownLoadManager;
 import com.yuan.leopardkit.download.model.DownloadInfo;
 
@@ -22,15 +23,16 @@ import cn.yuan.leopard.adapters.DownLoadApater;
 import cn.yuan.leopard.model.DownLoadModel;
 
 
-public class DownloadFragment extends Fragment implements View.OnClickListener{
+public class DownloadFragment extends Fragment implements View.OnClickListener {
 
     private RecyclerView recyclerView;
     private DownLoadApater adapter;
 
+    private TextView pathShowTv;
+    private Button deleteAllBtn, stopAllBtn, startAllBtn, pauseAllBtn;
+
     List<DownLoadModel> data = new ArrayList<>();
 
-    private TextView pathTv;
-    private Button startAllBtn,stopAllBtn,pauseAllBtn,deleteAllBtn;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -43,37 +45,50 @@ public class DownloadFragment extends Fragment implements View.OnClickListener{
 
     private void initView(View view) {
 
-        deleteAllBtn = (Button) view.findViewById(R.id.down_deleteall_btn);
-        startAllBtn = (Button) view.findViewById(R.id.down_startall_btn);
-        stopAllBtn = (Button) view.findViewById(R.id.down_stopall_btn);
-        pauseAllBtn = (Button) view.findViewById(R.id.down_pauseall_btn);
+        pathShowTv = (TextView) view.findViewById(R.id.down_path_tv);
+        pathShowTv.setText(pathShowTv.getText().toString()+" "+DownLoadManager.getManager().deFaultDir);
+        startAllBtn = (Button) view.findViewById(R.id.down_start_all_btn);
+        stopAllBtn = (Button) view.findViewById(R.id.down_stop_all_btn);
+        pauseAllBtn = (Button) view.findViewById(R.id.down_pause_all_btn);
+        deleteAllBtn = (Button) view.findViewById(R.id.down_delete_all_btn);
 
         recyclerView = (RecyclerView) view.findViewById(R.id.down_recyclerView);
         recyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
 
-        adapter = new DownLoadApater(data,getActivity());
+        adapter = new DownLoadApater(data, getActivity());
         recyclerView.setAdapter(adapter);
 
         initData();
     }
 
-    private void initListener(){
-        deleteAllBtn.setOnClickListener(this);
+    private void initListener() {
         startAllBtn.setOnClickListener(this);
         stopAllBtn.setOnClickListener(this);
         pauseAllBtn.setOnClickListener(this);
+        deleteAllBtn.setOnClickListener(this);
     }
 
-    private void initData(){
-        for (int i = 0;i<3;i++){
-            String url = "http://a5.pc6.com/pc6_soure/2016-3/cn.wsy.travel.apk";
-            DownloadInfo info = new DownloadInfo();
-            info.setUrl(url);
-            info.setProgress(0l);
-            info.setFileName("IRecord_"+i+".apk");
+    private void initData() {
+
+        List<DownloadInfo> downloadInfoList =   HttpDbUtil.instance.queryFileInfo(0);
+
+        for (DownloadInfo info:downloadInfoList){
             DownLoadModel model = new DownLoadModel();
             model.setInfo(info);
             data.add(model);
+        }
+
+        if (data.size() <=0) {
+        for (int i = 0; i < 3; i++) {
+            String url = "http://f1.market.xiaomi.com/download/AppStore/03f82a470d7ac44300d8700880584fe856387aac6/cn.wsy.travel.apk";
+            DownloadInfo info = new DownloadInfo();
+            info.setUrl(url);
+            info.setProgress(0L);
+            info.setFileName("IRecord_" + i + ".apk");
+            DownLoadModel model = new DownLoadModel();
+            model.setInfo(info);
+            data.add(model);
+        }
         }
         adapter.notifyDataSetChanged();
     }
@@ -81,26 +96,24 @@ public class DownloadFragment extends Fragment implements View.OnClickListener{
 
     @Override
     public void onClick(View v) {
-        switch (v.getId()){
-            case R.id.down_deleteall_btn:
+        switch (v.getId()) {
+            case R.id.down_start_all_btn:
+                DownLoadManager.getManager().startAllTask();
+                break;
+
+            case R.id.down_delete_all_btn:
                 DownLoadManager.getManager().removeAllTask();
                 data.clear();
                 adapter.notifyDataSetChanged();
                 break;
-            case R.id.down_pauseall_btn:
+
+            case R.id.down_pause_all_btn:
                 DownLoadManager.getManager().pauseAllTask();
-                adapter.notifyDataSetChanged();
                 break;
-            case R.id.down_startall_btn:
-                DownLoadManager.getManager().startAllTask();
-                adapter.notifyDataSetChanged();
-                break;
-            case R.id.down_stopall_btn:
+
+            case R.id.down_stop_all_btn:
                 DownLoadManager.getManager().stopAllTask();
-                adapter.notifyDataSetChanged();
-
                 break;
-
         }
     }
 }

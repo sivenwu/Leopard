@@ -2,7 +2,8 @@ package cn.yuan.leopard.base;
 
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentStatePagerAdapter;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.view.View;
 
@@ -20,7 +21,8 @@ public abstract class BaseTabFragment extends BaseFragment{
 
     private ViewPager viewPager;
     private List<ViewPageInfo> fragList;
-    protected FragmentStatePagerAdapter mAdapter;
+    protected FragmentPagerAdapter mAdapter;
+    private FragmentManager fm;
 
     @Override
     public void onViewCreated(View view, Bundle savedInstanceState) {
@@ -28,9 +30,10 @@ public abstract class BaseTabFragment extends BaseFragment{
         viewPager = (ViewPager) view.findViewById(R.id.viewpager);
 
         if (mAdapter == null){
+            fm = getFragmentManager();
             fragList = new ArrayList<>();
             addSubViewTab();
-            mAdapter = new FragmentStatePagerAdapter(getFragmentManager()) {
+            mAdapter = new FragmentPagerAdapter(fm) {
                 @Override
                 public Fragment getItem(int position) {
                     return fragList.get(position).fragment;
@@ -46,7 +49,6 @@ public abstract class BaseTabFragment extends BaseFragment{
                     return fragList.get(position).tag;
                 }
 
-
             };
             if (viewPager !=null) {
                 viewPager.setAdapter(mAdapter);
@@ -61,13 +63,13 @@ public abstract class BaseTabFragment extends BaseFragment{
         }
     }
 
-    public FragmentStatePagerAdapter getmAdapter() {
+    public FragmentPagerAdapter getmAdapter() {
         return mAdapter;
     }
 
     public abstract void addSubViewTab();
 
-    public abstract void loadFinishView(ViewPager viewPager, FragmentStatePagerAdapter mAdapter);
+    public abstract void loadFinishView(ViewPager viewPager, FragmentPagerAdapter mAdapter);
 
     public void addTab(String tag, Class<? extends Fragment> fragment){
         fragList.add(new ViewPageInfo(tag, Fragment.instantiate(getActivity(), fragment.getName())));

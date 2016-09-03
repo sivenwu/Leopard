@@ -32,13 +32,28 @@
         android:layout_toRightOf="@id/down_icon"
         android:orientation="vertical">
 
-        <TextView
-            android:id="@+id/down_appname"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="爱游记"
-            android:textColor="#000000"
-            android:textSize="18sp" />
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <TextView
+                android:id="@+id/down_appname"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="爱游记"
+                android:textColor="#000000"
+                android:textSize="18sp" />
+
+            <TextView
+                android:id="@+id/down_progress"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentRight="true"
+                android:layout_marginRight="10dp"
+                android:layout_marginTop="2dp"
+                android:text="0%"
+                android:textSize="14sp" />
+        </RelativeLayout>
 
         <ProgressBar
             android:id="@+id/down_pb"
@@ -46,10 +61,10 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_below="@id/down_appname"
-            android:max="100"
             android:layout_marginBottom="3dp"
             android:layout_marginRight="5dp"
-            android:layout_marginTop="8dp" />
+            android:layout_marginTop="8dp"
+            android:max="100" />
 
         <TextView
             android:id="@+id/down_txt_pb"
@@ -62,11 +77,10 @@
     <View
         android:layout_width="match_parent"
         android:layout_height="1dp"
-        android:background="#ccc"
+        android:layout_alignParentBottom="true"
         android:layout_marginLeft="60dp"
         android:layout_marginTop="10dp"
-        android:layout_alignParentBottom="true"
-        />
+        android:background="#ccc" />
 
 
 </RelativeLayout>

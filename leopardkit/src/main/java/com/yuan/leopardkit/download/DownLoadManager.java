@@ -28,7 +28,7 @@ public class DownLoadManager {
     public static final int STATE_FINISH = 4;       //完成    --> 重新下载
     public static final int STATE_ERROR = 5;        //错误    --> 等待
 
-    private final String deFaultDir = Environment.getExternalStorageDirectory() + "/YuanDwonload/";
+    public String deFaultDir = Environment.getExternalStorageDirectory() + "/YuanDwonload/";
 
     private FileRespondResult callback;
     private List<DownloadInfo> downloadInfosList;
@@ -42,12 +42,12 @@ public class DownLoadManager {
 
     public DownLoadManager() {
         //初始化一系列
+        deFaultDir = Environment.getExternalStorageDirectory() + "/YuanDwonload/";
         downloadInfosList = new ArrayList<>();
         if (!new File(deFaultDir).exists()) new File(deFaultDir).mkdirs();
     }
 
     public void addTask(DownloadInfo downloadInfo, FileRespondResult listener){
-        downloadInfo.setState(STATE_WAITING);//准备下载
         if (downloadInfo.getFileSavePath() == null || downloadInfo.getFileSavePath().equals("")){
             downloadInfo.setFileSavePath(deFaultDir);
         }
@@ -60,32 +60,32 @@ public class DownLoadManager {
     }
 
     public void removeTask(DownloadInfo downloadInfo){
-        if (downloadInfosList.contains(downloadInfo))
-        downloadInfosList.remove(downloadInfo);
-        HttpDbUtil.instance.delete(downloadInfo);
-    }
-
-    public void removeAllTask(){
-        for (DownloadInfo downloadInfo : downloadInfosList){
-            downloadInfo.getDownLoadTask().stop();
+        if (downloadInfosList.contains(downloadInfo)) {
+            downloadInfosList.remove(downloadInfo);
             File downFile = new File(downloadInfo.getFileSavePath() + downloadInfo.getFileName());
             if (downFile.exists()){
                 downFile.delete();
             }
         }
-        downloadInfosList.clear();
+        HttpDbUtil.instance.delete(downloadInfo);
+    }
 
+    public void removeAllTask(){
+        for (DownloadInfo downloadInfo : downloadInfosList){
+            downloadInfo.getDownLoadTask().remove();
+        }
+        downloadInfosList.clear();
+    }
+
+    public void pauseAllTask(){
+        for (DownloadInfo downloadInfo : downloadInfosList){
+            downloadInfo.getDownLoadTask().pause();
+        }
     }
 
     public void restartAllTask(){
         for (DownloadInfo downloadInfo : downloadInfosList){
             downloadInfo.getDownLoadTask().download(true);
-        }
-    }
-
-    public void pauseAllTask(){
-        for (DownloadInfo downloadInfo : downloadInfosList){
-            downloadInfo.getDownLoadTask().pause(downloadInfo.getProgress());
         }
     }
 
