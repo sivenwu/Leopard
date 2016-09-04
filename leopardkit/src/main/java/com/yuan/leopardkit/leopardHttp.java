@@ -32,6 +32,8 @@ import retrofit2.converter.gson.GsonConverterFactory;
 public class LeopardHttp {
 
     private static final String TAG = "LeopardHttp";
+
+    private static int HANDER_DELAYED_TIME = 500;
     private static String ADDRESS = "http://127.0.0.1";
 
     /**
@@ -97,7 +99,7 @@ public class LeopardHttp {
                 Message message = new Message();
                 message.arg1 = (int) progress;
                 message.arg2 = (int) total;
-                handler.sendMessage(message);
+                handler.sendMessageDelayed(message,HANDER_DELAYED_TIME);
             }
         });
 
@@ -119,7 +121,7 @@ public class LeopardHttp {
                 Message message = new Message();
                 message.arg1 = (int) progress;
                 message.arg2 = (int) total;
-                handler.sendMessage(message);
+                handler.sendMessageDelayed(message,HANDER_DELAYED_TIME);
             }
         };
 
