@@ -524,3 +524,30 @@ LeopardClient.Builder()
 傻小孩b
 共勉，写给在成长路上奋斗的你。
 
+
+
+------------------------------------------------------------------------------------------------------------------------------
+# Leopard
+
+##Foreword
+Leopard is cheetah, of all the cats. The smallest cheetah, speed, the most stable. This is also the author want to use this name to this Kit. Hope this Kit for some developers to encapsulate some ideas help network framework, the author also in the struggle on the road summarized progress, '! Finally, if you have any questions can give me a lift issuse, or directly contact me (email: sy.wu.chn@gmail.com), likes to point a star for me, your support is my biggest power ~ thank you!
+
+##Leopard，The current implementation function
+Provide a HTTP request thread safety to satisfy daily needs package Library, the underlying the Retrofit + Okhttp + RxJava support, by building builder design pattern implementation. Current POST and GET (support custom header files, form the key value of the request, the custom data sources such as basic request), file upload management (support single file upload and file upload, do not restrict the file type), file download manager (support single file download with multiple files to download, do not restrict the file type, support large file download and breakpoint download)
+##Demo
+
+![Leopard演示.jpg](http://upload-images.jianshu.io/upload_images/2516602-e7f52082af597001.jpg?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
+
+##Leopard，Method of use：
+NoticeCurrently only supports the Android Studio version。
+### 1.1 version Method of use：
+####一、Introduced in the application of the build.gradle:
+````
+repositories {
+    maven { url = 'https://dl.bintray.com/yuancloud/maven/' }
+    ...
+}
+
+compile 'cn.yuancloud.app:leopardkit:1.1'
+````
+Details usage can see the inside of the kit sample project, using the example below will approach.
