@@ -109,7 +109,7 @@ final Observable.Transformer schedulersTransformer = new Observable.Transformer(
 ###四、关于下载
 对于Leopard的下载管理模式，借鉴了Android原生DownLoadManager下载管理的模式--DownLoadManager与DownLoadTask结合的机制。DownLoadTask负责单一职责，为每个下载 任务提供下载服务（缓存管理、开始、暂停、停止等功能）。DownLoadManager作为多DownLoadTask管理者，为多任务提供所有的下载服务。下面是下载的具体实现逻辑图。
 
-![LeoPard Download.png](http://upload-images.jianshu.io/upload_images/2516602-ab5157ae08469df9.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
+![Leopard Download.png](http://upload-images.jianshu.io/upload_images/2516602-cad4ab69949e4cca.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
 
 详细的源码解析会在笔者博客简书分析。
 
