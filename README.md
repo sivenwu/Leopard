@@ -38,21 +38,27 @@ compile 'cn.yuancloud.app:leopardkit:1.1'
 Retrofit底层支持Gson，这个Factory提供当你需要调整json里面的一些格式的时候可以使用。
 
 （2）RxJavaCallAdapterFactory
+
 当你需要结合RxJava的时候，而不是仅仅使用原生Retrofit请求响应回调的Call。这时候你需要回调一个观察者（Observable）的时候，必须构造的时候添加这个Factory。
 
 （3）RequestComFactory
+
 默认必须要添加的Factory，为了拦截请求时候的request与response。
 
 （4）RequestJsonFactory
+
 当你需要向你的服务器请求非键值对，而是自定义对象转后后的json数据的时候。必须构造的时候添加这个Factory，底层会自动识别帮你转化。
 
 （5）UploadFileFactory
+
 顾名思义，当你需要进行上传文件的时候，在构造client的时需要添加这个Factory，底层文件类型头信息会自动生成。
 
 （6）DownLoadFileFactory
+
 顾名思义，当你需要进行下载文件的时候，在构造client的时需要添加这个Factory，底层会自动根据文件类型自动生成头信息，默认开启断点续传，下载过程可以通过DownLoadManager管理控制。
 
 （7）HeaderAddFactory
+
 当你需要自定义头文件的时候，，在构造client的时需要添加这个Factory。底层会自动帮你添加到请求头。
 
 
