@@ -536,7 +536,7 @@ Leopard is cheetah, of all the cats. The smallest cheetah, speed, the most stabl
 Provide a HTTP request thread safety to satisfy daily needs package Library, the underlying the Retrofit + Okhttp + RxJava support, by building builder design pattern implementation. Current POST and GET (support custom header files, form the key value of the request, the custom data sources such as basic request), file upload management (support single file upload and file upload, do not restrict the file type), file download manager (support single file download with multiple files to download, do not restrict the file type, support large file download and breakpoint download)
 ##Demo
 
-![Leopard演示.jpg](http://upload-images.jianshu.io/upload_images/2516602-e7f52082af597001.jpg?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
+![LeopardShow.jpg](http://upload-images.jianshu.io/upload_images/2516602-e7f52082af597001.jpg?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
 
 ##Leopard，Method of use：
 NoticeCurrently only supports the Android Studio version。
@@ -551,3 +551,500 @@ repositories {
 compile 'cn.yuancloud.app:leopardkit:1.1'
 ````
 Details usage can see the inside of the kit sample project, using the example below will approach.
+
+##Leopard，Code analyses
+###1st. Builder Mode
+
+Usually, most developers can use the singleton pattern to encapsulate network framework. Indeed, for serious memory network request object, singleton pattern greatly reduces the memory overhead. But the singleton pattern responsibility is too single, flexibility really is not high. So here I strongly recommend using Builder model, single responsibility needs to be informed what resources as long as the builders Builder, such not only can reduce the memory overhead, and object to building flexibility needs, kill two birds with one stone.
+
+###2nd. Seven Factory supports
+
+The Factory here, including the Converter.Factory and Interceptor support. Currently include Retrofit the underlying GsonConverterFactory realized with RxJavaCallAdapterFactory, Leopard has added an extra five Factory, under the following specific simple additional 5 Factory and Retrofit is implemented at the bottom of the Factory.
+（1）GsonConverterFactory  
+
+Retrofit the underlying support Gson, the Factory provides some when you need to adjust the inside of the json format can use.
+（2）RxJavaCallAdapterFactory
+
+When you need to combine RxJava, rather than merely use native Retrofit request response callback to Call. You need a callback an observer (observables), add the Factory must be constructed.
+（3）RequestComFactory
+
+Must be added to the default Factory, in order to intercept requests when the request and response.
+
+（4）RequestJsonFactory
+
+When you need to ask your server for the key-value pairs, but custom object after the json data. Must be constructed of adding this Factory, the underlying automatically identify to help you.
+（5）UploadFileFactory
+
+As the name suggests, when you need to upload a file, when constructing the client need to add the Factory, the underlying file type header information will be automatically generated.
+
+（6）DownLoadFileFactory
+
+As the name suggests, when you need to download the file, when constructing the client need to add the Factory, the bottom will be automatically generated automatically depending on the type of file header information, the default open breakpoint continuingly, download process by DownLoadManager management control.
+
+（7）HeaderAddFactory
+
+When you need a custom header files, in constructing the client need to add the Factory. The underlying will automatically help you added to the request header.
+
+
+###3rd. About the basic request
+"RxJava" benefits, can ensure the safety of the thread. Due to network requests cannot perform in the main thread, therefore in the "Leopard", put all network perform IO thread, ensure thread safety. For example, the following configuration:
+`````
+final Observable.Transformer schedulersTransformer = new Observable.Transformer() {
+    @Override
+    public Object call(Object observable) {
+        return ((Observable) observable)
+                .subscribeOn(Schedulers.io())
+                .unsubscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                ;
+    }
+};
+`````
+In Leopard, a basic has written six entrances, developers can according to their own needs to inherit the custom entry
+
+`````
+    @POST("{path}")
+    Observable<ResponseBody> post(
+            @Path(value = "path", encoded = true) String path,
+            @QueryMap Map<String, Object> map);
+
+    @GET("{path}")
+    Observable<ResponseBody> get(
+            @Path(value = "path", encoded = true) String path,
+            @QueryMap Map<String, Object> map);
+
+    @POST("{path}")
+    Observable<ResponseBody> postJSON(
+            @Path(value = "path", encoded = true) String path,
+            @Body RequestBody route);
+
+    @GET("{path}")
+    Observable<ResponseBody> getJSON(
+            @Path(value = "path", encoded = true) String path,
+            @Body RequestBody route);
+
+    @Multipart
+    @POST("{path}")
+    Observable<ResponseBody> uploadFile(
+            @Path(value = "path", encoded = true) String url,
+            @PartMap() Map<String, RequestBody> maps);
+
+//    @Streaming
+    @GET
+    Observable<ResponseBody> downloadFile(
+            @Url String fileUrl);
+`````
+Detailed source code parsing analysis Jane books will be in my blog.
+
+###4th. About the upload
+For Leopard download management model, draw lessons from the Android native DownLoadManager download management pattern -- DownLoadManager combined with DownLoadTask mechanism. DownLoadTask responsible for single responsibility, for each download task download service (cache management, start, pause, stop, etc). DownLoadManager as much DownLoadTask manager, multiple task to provide all the download service. Below is the download the concrete implementation of the logic diagram.
+
+![Leopard Download.png](http://upload-images.jianshu.io/upload_images/2516602-cad4ab69949e4cca.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
+
+Detailed source code parsing analysis Jane books will be in my blog.
+
+###5th. About the download
+Conventional practice, upload and key/value pair Reqtuest have similar logic operation. Value, of the File as a key/value pair will upload the File File information as the key, and then to get request to the server. Here is to address the file upload progress monitoring, for RequestBody okhttp3 encapsulated bottom, is not to schedule byte stream as a cache handling, therefore needs to be rewritten in the Leopard RequestBody, to upload the cache for processing. Below is the upload specific logic diagram.
+
+![LeoPard UpLoad.png](http://upload-images.jianshu.io/upload_images/2516602-829b814ad0a3bd97.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
+
+Detailed source code parsing analysis Jane books will be in my blog.
+
+##Leopard，Leopard, using method (building automation)
+In order to reduce the user use complexity, there is a good integrated automated build leopard object, USES a singleton pattern. But the author is recommended according to the custom demand, using method is as follows:
+
+#### 0. Initialization
+
+`````
+//  initialize the host domain name with the context
+// Suggest that the incoming getApplication
+LeopardHttp.init("http://wxwusy.applinzi.com/leopardWeb/app/",this);
+`````
+
+#### 1.  Basic request
+
+In the first place at the time of the request parameters must define a model, and inherit the inside of the Leopard BaseEnetity, specific definition model example as follows:
+
+`````
+public class RequestPostModel extends BaseEnetity{
+    @Override
+    public String getRuqestURL() {
+        return "sample/post.php";//你的访问url
+    }
+
+  //request parameters
+    private String data;
+    private String time;
+
+    public RequestPostModel(String data, String time) {
+        this.data = data;
+        this.time = time;
+    }
+
+  //get set method must be established
+    public String getData() {
+        return data;
+    }
+
+    public void setData(String data) {
+        this.data = data;
+    }
+
+    public String getTime() {
+        return time;
+    }
+
+    public void setTime(String time) {
+        this.time = time;
+    }
+}
+`````
+
+####1.1  post and get the keys for the request
+
+#####1.1.1  POST
+
+`````
+ /**
+     *
+     * @param type  request type, specific see HttpMethod, provides four types of requests
+     * @param context context
+     * @param enetity request model
+     * @param httpRespondResult callback
+     */
+    LeopardHttp.SEND(HttpMethod.POST,getActivity(),new RequestPostModel("leopard", Utils.getNowTime()), new HttpRespondResult(getActivity()) {
+            @Override
+            public void onSuccess(String content) {//json
+                resonseData.setText("onSuccess \n"+content);
+            }
+
+            @Override
+            public void onFailure(Throwable error, String content) {
+                resonseData.setText("onFailure \n"+content);
+            }
+        });
+`````
+#####1.1.2  GET
+
+`````
+/**
+     *
+     * @param type  request type, specific see HttpMethod, provides four types of requests
+     * @param context context
+     * @param enetity request model
+     * @param httpRespondResult callback
+     */
+    LeopardHttp.SEND(HttpMethod.GET,getActivity(),new RequestGetModel("leopard", Utils.getNowTime()), new HttpRespondResult(getActivity()) {
+            @Override
+            public void onSuccess(String content) {//json
+                resonseData.setText("onSuccess \n"+content);
+            }
+
+            @Override
+            public void onFailure(Throwable error, String content) {
+                resonseData.setText("onFailure \n"+content);
+            }
+        });
+`````
+#####1.3  The post and get custom Json object request
+
+
+######1.3.1  POST JSON
+
+`````
+/**
+     *
+     * @param type  request type, specific see HttpMethod, provides four types of requests
+     * @param context context
+     * @param enetity request model
+     * @param httpRespondResult callback
+     */
+    LeopardHttp.SEND(HttpMethod.POST_JSON,getActivity(),new RequestPostJsonModel("leopard", Utils.getNowTime()), new HttpRespondResult(getActivity()) {
+            @Override
+            public void onSuccess(String content) {//json
+                resonseData.setText("onSuccess \n"+content);
+            }
+
+            @Override
+            public void onFailure(Throwable error, String content) {
+                resonseData.setText("onFailure \n"+content);
+            }
+        });
+`````
+####1.4 post与get post and get request, take the lead
+
+######1.4.1  POST head requests
+
+`````
+
+        HashMap<String,String> headers = new HashMap<>();
+        headers.put("apikey","dqwijotfpgjweigowethiuhqwqpqeqp");
+        headers.put("apiSecret","ojtowejioweqwcxzcasdqweqrfrrqrqw");
+        headers.put("name","leopard");
+
+/**
+     *
+     * @param type  request type, specific see HttpMethod, provides four types of requests
+     * @param context context
+     * @param enetity request model
+     * @param header request header files
+     * @param httpRespondResult callback
+     */
+        LeopardHttp.SEND(HttpMethod.POST,getActivity(),new RequestPostModel("leopard", Utils.getNowTime()),headers, new HttpRespondResult(getActivity()) {
+            @Override
+            public void onSuccess(String content) {
+                resonseData.setText("onSuccess \n"+content);
+
+            }
+
+            @Override
+            public void onFailure(Throwable error, String content) {
+                resonseData.setText("onFailure \n"+content);
+            }
+        });
+`````
+######1.4.2 GET head requests
+
+`````
+
+        HashMap<String,String> headers = new HashMap<>();
+        headers.put("apikey","dqwijotfpgjweigowethiuhqwqpqeqp");
+        headers.put("apiSecret","ojtowejioweqwcxzcasdqweqrfrrqrqw");
+        headers.put("name","leopard");
+
+/**
+     *
+     * @param type  request type, specific see HttpMethod, provides four types of requests
+     * @param context context
+     * @param enetity request model
+     * @param header request header files
+     * @param httpRespondResult callback
+     */
+        LeopardHttp.SEND(HttpMethod.GET,getActivity(),new RequestPostModel("leopard", Utils.getNowTime()),headers, new HttpRespondResult(getActivity()) {
+            @Override
+            public void onSuccess(String content) {
+                resonseData.setText("onSuccess \n"+content);
+
+            }
+
+            @Override
+            public void onFailure(Throwable error, String content) {
+                resonseData.setText("onFailure \n"+content);
+            }
+        });
+`````
+
+####2. Upload management
+
+When uploading must first look at the upload encapsulate entity class FileUploadEnetity (code)
+
+`````
+    .....
+   private String url;
+    private List<File> files = new ArrayList<>();
+
+    public FileUploadEnetity(String url, File file) {
+        this.url = url;
+        this.files.add(file);
+        initSize();
+    }
+
+    public FileUploadEnetity(String url, List<File> files) {
+        this.url = url;
+        this.files = files;
+        initSize();
+    }
+    .....
+`````
+At the time of uploading, allows developers to upload your one or more files. If is the time to upload a File, build time only need to upload the address and the File type of document; Instead to upload files, build the only need to upload the address with the List < File > type of File queue type.
+
+#####2.1 Basic upload
+
+`````
+ /**
+     * Upload
+     *
+     * @param FileUploadEnetity upload encapsulate entity class
+     * @param IProgress upload progress callback interface
+     */
+    LeopardHttp.UPLOAD(new FileUploadEnetity("upload.php",fileList), new IProgress() {
+                    @Override
+                    public void onProgress(long progress, long total, boolean done) {
+			// progress to return to the upload progress, total returns the current total upload file sizes
+                        if (done){
+                            progressDialog.dismiss();
+                            Toast.makeText(getActivity(),"Upload Success！！",Toast.LENGTH_SHORT).show();
+                        }
+                    }
+                });
+``````
+
+####3. Download manager
+
+First the underlying breakpoint information database storage by Greendao database framework support. Second, in the download you must look at the entity in the wrapper class DownloadInfo, when add download Task in constructing DownloadInfo object, at least initial download address, storage file name. For example the following code:
+
+`````
+String url = "http://f1.market.xiaomi.com/download/AppStore/03f82a470d7ac44300d8700880584fe856387aac6/cn.wsy.travel.apk";
+            DownloadInfo info = new DownloadInfo();
+            info.setUrl(url);
+            info.setFileName("IRecord_" + i + ".apk");
+`````
+
+#####3.1 Basic download (add Task and start the download)
+
+`````
+    /**
+     * download entrance
+     *
+     * @param downloadInfo
+     * @param iProgress
+     * @return have a Task to download entity
+     */
+   LeopardHttp.DWONLOAD(info, new IProgress() {
+            @Override
+            public void onProgress(long progress, long total, boolean done) {
+		// progress to return to the upload progress, total returns the current total upload file sizes
+                //button to update
+                if (info.getState() == DownLoadManager.STATE_WAITING) {
+                    holder.downBtn.setText("download ");
+                }
+
+                if (info.getState() == DownLoadManager.STATE_PAUSE) {
+                    holder.downBtn.setText("continue");
+                }
+
+                if (info.getState() == DownLoadManager.STATE_DOWNLOADING) {
+                    holder.downBtn.setText("pause ");
+                }
+                if (done) {
+                    //the download is complete...
+                }
+            }
+        });
+`````
+#####3.2 DownLoadTask single download management tasks
+
+######3.2.1 began to download
+
+`````
+// to true indicates download from the very beginningdownloadInfo.getDownLoadTask().downLoad(true);
+`````
+######3.2.2 pause download
+
+`````
+downloadInfo.getDownLoadTask().pause();
+`````
+######3.2.3 resume download
+
+`````
+downloadInfo.getDownLoadTask().resume();
+`````
+######3.2.4  stop download
+
+`````
+downloadInfo.getDownLoadTask().stop();
+`````
+######3.2.5 download again
+
+`````
+downloadInfo.getDownLoadTask().restart();
+`````
+#####3.3 DownLoadManager multitasking download manager
+
+######3.3.1 delete all downloads
+
+`````
+DownLoadManager.getManager().removeAllTask();
+`````
+######3.3.2 pause all downloads
+
+`````
+DownLoadManager.getManager().pauseAllTask();
+`````
+######3.3.3 stop all downloads
+
+`````
+DownLoadManager.getManager().stopAllTask();
+`````
+######3.3.4 begin all downloads
+
+`````
+DownLoadManager.getManager().startAllTask();
+`````
+
+##Leopard, using method (manual build)
+Encapsulated in front of the singleton pattern LeopardHttp, it is more convenient for developers to invoke, automated build good LeopardClient object and configuration properties corresponding to the need. But again, in order to be able to let the reader can more flexible configuration LeopardClient, so suggest or use builder model building, can according to demand to custom interceptors or custom Factroy.
+
+Now for example manually build the part of the code, now support functions are:
+
+####1.Basic request
+
+#####1.1 POST and GET the keys for the request
+
+`````
+ LeopardClient.Builder()
+                .addRequestComFactory(new RequestComFactory(respondResult))
+                .addGsonConverterFactory(GsonConverterFactory.create())
+                .addRxJavaCallAdapterFactory(RxJavaCallAdapterFactory.create())
+                .baseUrl(ADDRESS)
+                .build()
+                .GET(context, enetity, httpRespondResult);//get request
+             // .POST(context, enetity, httpRespondResult);//post request
+`````
+#####1.2 POST and GET custom Json request
+
+`````
+ LeopardClient.Builder()
+                .addRequestComFactory(new RequestComFactory(respondResult))
+                .addGsonConverterFactory(GsonConverterFactory.create())
+                .addRequestJsonFactory(RequestJsonFactory.create())
+                .addRxJavaCallAdapterFactory(RxJavaCallAdapterFactory.create())
+                .baseUrl(ADDRESS)
+                .build()
+                .GET(context, enetity, httpRespondResult);//get request
+             // .POST(context, enetity, httpRespondResult);//post request
+`````
+####2. Download manager
+
+`````
+LeopardClient.Builder()
+                .addRxJavaCallAdapterFactory(RxJavaCallAdapterFactory.create())
+                .addDownLoadFileFactory(DownLoadFileFactory.create(this.fileRespondResult, this.downloadInfo))
+                .build()
+                .downLoadFile(this.downloadInfo, callBack.fileRespondResult, downLoadTask);
+`````
+####3. Upload manager
+
+`````
+ LeopardClient.Builder()
+                .addRequestComFactory(new RequestComFactory(respondResult))
+                .addGsonConverterFactory(GsonConverterFactory.create())
+                .addRxJavaCallAdapterFactory(RxJavaCallAdapterFactory.create())
+                .baseUrl(ADDRESS)
+                .addUploadFileFactory(UploadFileFactory.create())
+                .build()
+                .upLoadFiles(uploadEnetity,respondResult)
+                
+`````
+### extensibility
+The scalability, allowing developers to inheritance extensions are:
+
+1. The custom access interface, allows developers to access new interface based on the requirements.
+
+extends BaseServerApi interface
+
+2. Custom extensions Builder, allows developers to add custom interceptors and Factory
+
+extends LeopardClient. Builder and LeopardClient can
+
+3. Allow the download function extension management tasks
+
+Allows developers to download task management function can be extended, the underlying basic methods such as start, pause is not allowed to change. Developers can extend other additional custom functions.
+
+Version updating...
+
+My blog：http://www.jianshu.com/users/d388bcf9c4d3/latest_articles
+
+Yuan
+To strive, to strive for growing the way you.
+
