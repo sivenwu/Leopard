@@ -171,7 +171,7 @@ public class RequestPostModel extends BaseEnetity{
 
 ####1.1  post与get键值对请求
 
-####1.1.1  POST
+#####1.1.1  POST
 
 `````
  /**
@@ -193,7 +193,7 @@ public class RequestPostModel extends BaseEnetity{
             }
         });
 `````
-####1.1.2  GET
+#####1.1.2  GET
 
 `````
  /**
@@ -215,9 +215,9 @@ public class RequestPostModel extends BaseEnetity{
             }
         });
 `````
-####1.2  post与get自定义Json对象请求
+#####1.3  post与get自定义Json对象请求
 
-####1.2.1  POST JSON
+######1.3.1  POST JSON
 
 `````
  /**
@@ -238,9 +238,9 @@ public class RequestPostModel extends BaseEnetity{
             }
         });
 `````
-####1.3 post与get请求，带头部
+####1.4 post与get请求，带头部
 
-POST 带头部请求
+######1.4.1 POST 带头部请求
 
 `````
 
@@ -270,7 +270,7 @@ POST 带头部请求
             }
         });
 `````
-GET 带头部请求
+######1.4.2 GET 带头部请求
 
 `````
 
@@ -325,7 +325,7 @@ GET 带头部请求
 `````
 在上传的时候，允许开发者上传你一个或多个文件。如果是上传一个文件的时候，构建的时候只需要传入上传地址与File类型的文件；反之上传多文件，构建的时候只需要传入上传地址与List<File> 类型的文件队列类型。
 
-####2.1 基本上传
+#####2.1 基本上传
 
 `````
  /**
@@ -357,7 +357,7 @@ String url = "http://f1.market.xiaomi.com/download/AppStore/03f82a470d7ac44300d8
             info.setFileName("IRecord_" + i + ".apk");
 `````
 
-####3.1 基本下载(添加任务Task与启动下载)
+#####3.1 基本下载(添加任务Task与启动下载)
 
 `````
     /**
@@ -389,52 +389,52 @@ String url = "http://f1.market.xiaomi.com/download/AppStore/03f82a470d7ac44300d8
             }
         });
 `````
-####3.2 DownLoadTask 单任务下载管理
+#####3.2 DownLoadTask 单任务下载管理
 
-####3.2.1 开始下载
+######3.2.1 开始下载
 
 `````
 // 传入true表示从头开始下载
 downloadInfo.getDownLoadTask().downLoad(true);
 `````
-####3.2.2 暂停下载
+######3.2.2 暂停下载
 
 `````
 downloadInfo.getDownLoadTask().pause();
 `````
-####3.2.3 恢复下载
+######3.2.3 恢复下载
 
 `````
 downloadInfo.getDownLoadTask().resume();
 `````
-####3.2.4 停止下载
+######3.2.4 停止下载
 
 `````
 downloadInfo.getDownLoadTask().stop();
 `````
-####3.2.5 重新下载
+######3.2.5 重新下载
 
 `````
 downloadInfo.getDownLoadTask().restart();
 `````
-####3.3 DownLoadManager 多任务下载管理
+#####3.3 DownLoadManager 多任务下载管理
 
-####3.3.1 删除所有下载任务
+######3.3.1 删除所有下载任务
 
 `````
 DownLoadManager.getManager().removeAllTask();
 `````
-####3.3.2 暂停所有任务
+######3.3.2 暂停所有任务
 
 `````
 DownLoadManager.getManager().pauseAllTask();
 `````
-####3.3.3 停止所有任务
+######3.3.3 停止所有任务
 
 `````
 DownLoadManager.getManager().stopAllTask();
 `````
-####3.3.4 开始所有任务
+######3.3.4 开始所有任务
 
 `````
 DownLoadManager.getManager().startAllTask();
@@ -446,7 +446,7 @@ DownLoadManager.getManager().startAllTask();
 现在举例子手动构建的部分代码，目前支持的功能有：
 ####1.基本请求
 
-####1.1 POST与 GET 键值对请求
+#####1.1 POST与 GET 键值对请求
 
 `````
  LeopardClient.Builder()
@@ -458,7 +458,7 @@ DownLoadManager.getManager().startAllTask();
                 .GET(context, enetity, httpRespondResult);//get请求
              // .POST(context, enetity, httpRespondResult);//post请求
 `````
-####1.2 POST与 GET 自定义Json请求
+#####1.2 POST与 GET 自定义Json请求
 
 `````
  LeopardClient.Builder()
