@@ -40,7 +40,6 @@ public class LeopardHttp {
      * 用之前必须先初始化主机域名
      *
      * @param address
-     * @return
      */
     public static void init(String address, Context context) {
         ADDRESS = address;
@@ -88,8 +87,13 @@ public class LeopardHttp {
             @Override
             public void handleMessage(Message msg) {
                 super.handleMessage(msg);
-                if (downloadInfo.getState() != DownLoadManager.STATE_WAITING)
+                if (downloadInfo.getState() != DownLoadManager.STATE_WAITING) {
+                    if (msg.arg2 == 0){
+                        iProgress.onProgress(msg.arg1, msg.arg2, false);
+                        return ;
+                    }
                     iProgress.onProgress(msg.arg1, msg.arg2, msg.arg1 >= msg.arg2);
+                }
             }
         };
 

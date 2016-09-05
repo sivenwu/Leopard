@@ -118,6 +118,7 @@ public class DownLoadApater extends RecyclerView.Adapter<DownLoadApater.MyViewHo
                 if (info.getState() == DownLoadManager.STATE_FINISH) {
                     holder.downBtn.setText("暫停");
                     info.getDownLoadTask().reStart();
+                    return;
                 }
 
                 if (info.getState() == DownLoadManager.STATE_WAITING) {

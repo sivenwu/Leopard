@@ -42,7 +42,6 @@ public class JsonParseUtil {
     }
 
     /**
-     * json转换为List<T>
      *
      * @param json
      * @param cls

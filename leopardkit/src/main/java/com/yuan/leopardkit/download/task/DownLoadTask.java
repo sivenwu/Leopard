@@ -86,13 +86,14 @@ public class DownLoadTask {
         if (downloadInfo.getState() == DownLoadManager.STATE_DOWNLOADING)return;
 
         if (downloadInfo.getState() == DownLoadManager.STATE_FINISH && !isRestart) return;
-        downloadInfo.setState(DownLoadManager.STATE_DOWNLOADING);
         isStart = isRestart;
         if (isRestart) {
+            if (downloadInfo.getState() == DownLoadManager.STATE_FINISH )
             stop();
             resetProgress();
             startPoints = 0L;
         }
+        downloadInfo.setState(DownLoadManager.STATE_DOWNLOADING);
         getClient().downLoadFile(this.downloadInfo, this.fileRespondResult, this);
     }
 
