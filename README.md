@@ -520,6 +520,7 @@ LeopardClient.Builder()
 版本迭代中...
 
 简书：http://www.jianshu.com/users/d388bcf9c4d3/latest_articles
+欢迎加入开发狂热者QQ群： 450302004
 
 傻小孩b
 共勉，写给在成长路上奋斗的你。
