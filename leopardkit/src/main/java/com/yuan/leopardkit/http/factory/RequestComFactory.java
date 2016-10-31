@@ -17,7 +17,10 @@ public class RequestComFactory implements Interceptor {
 
     private HttpRespondResult httpRespondResult;
 
-    public RequestComFactory(HttpRespondResult httpRespondResult) {
+    public RequestComFactory() {
+    }
+
+    public void setHttpRespondResult(HttpRespondResult httpRespondResult) {
         this.httpRespondResult = httpRespondResult;
     }
 
@@ -25,13 +28,15 @@ public class RequestComFactory implements Interceptor {
     public Response intercept(Chain chain) throws IOException {
         Request.Builder builder = chain.request().newBuilder();
         Request request = builder.build();
+        if (request!=null && httpRespondResult!=null)
         httpRespondResult.setRequest(request);
         Response response = chain.proceed(request);
+        if (response!=null && httpRespondResult!=null)
         httpRespondResult.setResponse(response);
         return response;
     }
 
-    public static RequestComFactory create(HttpRespondResult httpRespondResult) {
-        return new RequestComFactory(httpRespondResult);
+    public static RequestComFactory create() {
+        return new RequestComFactory();
     }
 }

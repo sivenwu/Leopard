@@ -92,15 +92,6 @@
                 android:text="GET 带Heander" />
         </LinearLayout>
 
-        <TextView
-            android:id="@+id/cache_tv"
-            android:layout_width="match_parent"
-            android:layout_height="70dp"
-            android:layout_margin="10dp"
-            android:gravity="center"
-            android:textColor="#ffffff"
-            android:background="@color/colorAccent"
-            android:text="缓存测试入口" />
 
         <LinearLayout
             android:layout_width="match_parent"

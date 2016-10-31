@@ -3,9 +3,7 @@ package cn.yuan.leopard;
 import android.os.Bundle;
 import android.support.design.widget.TabLayout;
 import android.support.v4.app.FragmentPagerAdapter;
-import android.support.v4.app.FragmentStatePagerAdapter;
 import android.support.v4.view.ViewPager;
-import android.support.v7.app.AppCompatActivity;
 
 import com.yuan.leopardkit.LeopardHttp;
 import com.yuan.leopardkit.ui.activitys.LeopardActivity;
@@ -26,6 +24,7 @@ public class MainActivity extends LeopardActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         LeopardHttp.init("http://wxwusy.applinzi.com/leopardWeb/app/",this);
+//        LeopardHttp.setUseCache(true);
         initView();
     }
 

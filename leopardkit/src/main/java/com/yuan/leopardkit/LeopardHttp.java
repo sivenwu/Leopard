@@ -12,6 +12,7 @@ import com.yuan.leopardkit.download.model.DownloadInfo;
 import com.yuan.leopardkit.http.LeopardClient;
 import com.yuan.leopardkit.http.base.BaseEnetity;
 import com.yuan.leopardkit.http.base.HttpMethod;
+import com.yuan.leopardkit.http.factory.CacheFactory;
 import com.yuan.leopardkit.http.factory.RequestComFactory;
 import com.yuan.leopardkit.http.factory.RequestJsonFactory;
 import com.yuan.leopardkit.http.factory.UploadFileFactory;
@@ -36,22 +37,38 @@ public class LeopardHttp {
     private static int HANDER_DELAYED_TIME = 500;
     private static String ADDRESS = "http://127.0.0.1";
 
+    private static boolean useCache = false;
+
     /**
      * 用之前必须先初始化主机域名
      *
      * @param address
+     * @return
      */
     public static void init(String address, Context context) {
         ADDRESS = address;
         HttpDbUtil.initHttpDB(context.getApplicationContext());
     }
 
-    private static LeopardClient.Builder getBuilder(HttpRespondResult respondResult) {
-        return new LeopardClient.Builder()
-                .addRequestComFactory(new RequestComFactory(respondResult))
+    private static LeopardClient.Builder getBuilder(Context mC) {
+        LeopardClient.Builder builder =  new LeopardClient.Builder()
                 .addGsonConverterFactory(GsonConverterFactory.create())
                 .addRxJavaCallAdapterFactory(RxJavaCallAdapterFactory.create())
                 .baseUrl(ADDRESS);
+
+        if (useCache && mC != null){
+            builder.addCacheFactory(CacheFactory.create(mC));
+        }
+
+        return builder;
+    }
+
+    /**
+     * 是否使用缓存
+     * @param cache
+     */
+    public static void setUseCache(boolean cache) {
+        useCache = cache;
     }
 
     /**
@@ -87,13 +104,8 @@ public class LeopardHttp {
             @Override
             public void handleMessage(Message msg) {
                 super.handleMessage(msg);
-                if (downloadInfo.getState() != DownLoadManager.STATE_WAITING) {
-                    if (msg.arg2 == 0){
-                        iProgress.onProgress(msg.arg1, msg.arg2, false);
-                        return ;
-                    }
+                if (downloadInfo.getState() != DownLoadManager.STATE_WAITING)
                     iProgress.onProgress(msg.arg1, msg.arg2, msg.arg1 >= msg.arg2);
-                }
             }
         };
 
@@ -129,7 +141,7 @@ public class LeopardHttp {
             }
         };
 
-        getBuilder(respondResult)
+        getBuilder(null)
                 .addUploadFileFactory(UploadFileFactory.create())
                 .build()
                 .upLoadFiles(uploadEnetity,respondResult);
@@ -161,27 +173,27 @@ public class LeopardHttp {
 
 
     private static void POST(Context context, BaseEnetity enetity, HttpRespondResult httpRespondResult) {
-        getBuilder(httpRespondResult)
+        getBuilder(context)
                 .build()
                 .POST(context, enetity, httpRespondResult);
     }
 
     private static void POST(Context context, BaseEnetity enetity, HashMap<String, String> header, HttpRespondResult httpRespondResult) {
-        getBuilder(httpRespondResult)
+        getBuilder(context)
                 .addHeader(header)
                 .build()
                 .POST(context, enetity, httpRespondResult);
     }
 
     private static void POSTJson(Context context, BaseEnetity enetity, HttpRespondResult httpRespondResult) {
-        getBuilder(httpRespondResult)
+        getBuilder(context)
                 .addRequestJsonFactory(RequestJsonFactory.create())
                 .build()
                 .POST(context, enetity, httpRespondResult);
     }
 
     private static void POSTJson(Context context, BaseEnetity enetity, HashMap<String, String> header, HttpRespondResult httpRespondResult) {
-        getBuilder(httpRespondResult)
+        getBuilder(context)
                 .addHeader(header)
                 .addRequestJsonFactory(RequestJsonFactory.create())
                 .build()
@@ -189,27 +201,27 @@ public class LeopardHttp {
     }
 
     private static void GET(Context context, BaseEnetity enetity, HashMap<String, String> header, HttpRespondResult httpRespondResult) {
-        getBuilder(httpRespondResult)
+        getBuilder(context)
                 .addHeader(header)
                 .build()
                 .GET(context, enetity, httpRespondResult);
     }
 
     private static void GET(Context context, BaseEnetity enetity, HttpRespondResult httpRespondResult) {
-        getBuilder(httpRespondResult)
+        getBuilder(context)
                 .build()
                 .GET(context, enetity, httpRespondResult);
     }
 
     private static void GETjson(Context context, BaseEnetity enetity, HttpRespondResult httpRespondResult) {
-        getBuilder(httpRespondResult)
+        getBuilder(context)
                 .addRequestJsonFactory(RequestJsonFactory.create())
                 .build()
                 .GET(context, enetity, httpRespondResult);
     }
 
     private static void GETjson(Context context, BaseEnetity enetity, HashMap<String, String> header, HttpRespondResult httpRespondResult) {
-        getBuilder(httpRespondResult)
+        getBuilder(context)
                 .addHeader(header)
                 .addRequestJsonFactory(RequestJsonFactory.create())
                 .build()

@@ -10,6 +10,7 @@ import com.yuan.leopardkit.download.task.DownLoadSubscriber;
 import com.yuan.leopardkit.download.task.DownLoadTask;
 import com.yuan.leopardkit.http.base.BaseEnetity;
 import com.yuan.leopardkit.http.base.BaseSubscriber;
+import com.yuan.leopardkit.http.factory.CacheFactory;
 import com.yuan.leopardkit.http.factory.DownLoadFileFactory;
 import com.yuan.leopardkit.http.factory.HeaderAddFactory;
 import com.yuan.leopardkit.http.factory.RequestComFactory;
@@ -33,6 +34,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
+import okhttp3.Cache;
+import okhttp3.Interceptor;
 import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
@@ -79,10 +82,18 @@ public class LeopardClient {
         this.okHttpClient = okHttpClient;
         this.okHttpClientBuilder = okHttpClientBuilder;
         this.isJson = isJson;
+
     }
 
     public void POST(Context context, BaseEnetity entity, HttpRespondResult callback) {
         mContext = context;
+        //遍历搜索默认拦截器
+        for (Interceptor interceptor : okHttpClient.interceptors()){
+            if (interceptor instanceof RequestComFactory){
+                ((RequestComFactory)(interceptor)).setHttpRespondResult(callback);
+                break;
+            }
+        }
         if (isJson) {
             String json = JsonParseUtil.modeToJson(entity);
             Log.i("yuan", fiterURLFromJSON(json));
@@ -102,6 +113,13 @@ public class LeopardClient {
 
     public void GET(Context context, BaseEnetity entity, HttpRespondResult callback) {
         mContext = context;
+        //遍历搜索默认拦截器
+        for (Interceptor interceptor : okHttpClient.interceptors()){
+            if (interceptor instanceof RequestComFactory){
+                ((RequestComFactory)(interceptor)).setHttpRespondResult(callback);
+                break;
+            }
+        }
         if (isJson) {
             String json = JsonParseUtil.modeToJson(entity);
             Log.i("yuan", fiterURLFromJSON(json));
@@ -178,7 +196,7 @@ public class LeopardClient {
                 try {
                     Response response = okHttpClient.newCall(request).execute();
                     if (downloadInfo.getFileLength() <= 0)
-                    downloadInfo.setFileLength(response.body().contentLength());
+                        downloadInfo.setFileLength(response.body().contentLength());
                     downloadInfo.getDownLoadTask().writeCache(response.body().byteStream());
                     // TODO: 2016/8/31 更新数据库 这里记得做下数据库延时更新
                     HttpDbUtil.instance.updateState(downloadInfo);
@@ -249,6 +267,7 @@ public class LeopardClient {
         private UploadFileFactory uploadFileFactory;
         private DownLoadFileFactory downLoadFileFactory;
         private RequestComFactory requestComFactory;
+        private CacheFactory cacheFactory;
 
         public Builder() {
             retrofitBuilder = new Retrofit.Builder();
@@ -270,10 +289,10 @@ public class LeopardClient {
             return this;
         }
 
-        public Builder addRequestComFactory(RequestComFactory factory){
-            this.requestComFactory = factory;
-            return this;
-        }
+//        public Builder addRequestComFactory(RequestComFactory factory){
+//            this.requestComFactory = factory;
+//            return this;
+//        }
 
         public Builder addGsonConverterFactory(GsonConverterFactory factory) {
             this.gsonConverterFactory = factory;
@@ -301,6 +320,11 @@ public class LeopardClient {
             return this;
         }
 
+        public Builder addCacheFactory(CacheFactory factory){
+            this.cacheFactory = factory;
+            return this;
+        }
+
         public Builder client(OkHttpClient client) {
             this.okHttpClient = client;
             return this;
@@ -312,9 +336,8 @@ public class LeopardClient {
         }
 
         public LeopardClient build() {
-            if (this.requestComFactory != null){
-                okHttpClientBuilder.addInterceptor(this.requestComFactory);
-            }
+            //默认第一个添加
+            okHttpClientBuilder.addInterceptor(RequestComFactory.create());
 
             if (this.requestJsonFactory != null) {
                 okHttpClientBuilder.addInterceptor(this.requestJsonFactory);
@@ -326,6 +349,11 @@ public class LeopardClient {
 
             if (this.downLoadFileFactory != null) {
                 okHttpClientBuilder.addInterceptor(this.downLoadFileFactory);
+            }
+
+            if (this.cacheFactory != null){
+                okHttpClientBuilder.addInterceptor(this.cacheFactory);
+                okHttpClientBuilder.cache(new Cache(this.cacheFactory.getCacheFileDir(),this.cacheFactory.getCacheSize()));
             }
 
             okHttpClientBuilder.connectTimeout(TIME_OUT, TimeUnit.SECONDS);

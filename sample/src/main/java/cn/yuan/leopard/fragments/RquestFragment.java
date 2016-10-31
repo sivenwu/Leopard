@@ -2,6 +2,7 @@ package cn.yuan.leopard.fragments;
 
 
 import android.app.ProgressDialog;
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
@@ -17,6 +18,7 @@ import com.yuan.leopardkit.interfaces.ILoading;
 
 import java.util.HashMap;
 
+import cn.yuan.leopard.CacheActivity;
 import cn.yuan.leopard.R;
 import cn.yuan.leopard.Utils;
 import cn.yuan.leopard.model.RequestGetJsonModel;
@@ -32,6 +34,7 @@ public class RquestFragment extends Fragment implements View.OnClickListener{
     private TextView postTv,postJsonTv,postHeaderTv;
     private TextView getTv,getJsonTv,getHeaderTv;
     private TextView requestTv,requestHeader,resonseData,responseHeader;
+    private TextView cacheTv;
 
 
     @Override
@@ -57,6 +60,8 @@ public class RquestFragment extends Fragment implements View.OnClickListener{
         resonseData = (TextView) view.findViewById(R.id.response_data);
         responseHeader = (TextView) view.findViewById(R.id.response_header);
 
+        cacheTv = (TextView) view.findViewById(R.id.cache_tv);
+
     }
 
     private void initListener(){
@@ -66,6 +71,7 @@ public class RquestFragment extends Fragment implements View.OnClickListener{
         getTv.setOnClickListener(this);
         getJsonTv.setOnClickListener(this);
         getHeaderTv.setOnClickListener(this);
+        cacheTv.setOnClickListener(this);
     }
 
 
@@ -92,12 +98,14 @@ public class RquestFragment extends Fragment implements View.OnClickListener{
             case R.id.get_header_tv:
                 getHeader();
                 break;
-
+            case R.id.cache_tv:
+                startActivity(new Intent(getActivity(),CacheActivity.class));
+                break;
         }
     }
 
     public void post(){
-        LeopardHttp.SEND(HttpMethod.POST,getActivity(),new RequestPostModel("leopard", Utils.getNowTime()), new HttpRespondResult(getContext()) {
+        LeopardHttp.SEND(HttpMethod.POST,getActivity(),new RequestPostModel("leopard", "888888"), new HttpRespondResult(getContext()) {
             @Override
             public void onSuccess(String content) {
                 resonseData.setText("onSuccess \n"+content);
@@ -151,7 +159,7 @@ public class RquestFragment extends Fragment implements View.OnClickListener{
     }
 
     public void get(){
-        LeopardHttp.SEND(HttpMethod.GET,getActivity(),new RequestGetModel("leopard", Utils.getNowTime()), new HttpRespondResult(getContext()) {
+        LeopardHttp.SEND(HttpMethod.GET,getActivity(),new RequestGetModel("leopard", "123"), new HttpRespondResult(getContext()) {
             @Override
             public void onSuccess(String content) {
                 resonseData.setText("onSuccess \n"+content);

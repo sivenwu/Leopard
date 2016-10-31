@@ -33,7 +33,7 @@ public class DaoSession extends AbstractDaoSession {
 
         registerDao(FileModel.class, fileModelDao);
     }
-    
+
     public void clear() {
         fileModelDaoConfig.getIdentityScope().clear();
     }

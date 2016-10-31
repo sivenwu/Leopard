@@ -89,7 +89,7 @@ public class DownLoadTask {
         isStart = isRestart;
         if (isRestart) {
             if (downloadInfo.getState() == DownLoadManager.STATE_FINISH )
-            stop();
+                stop();
             resetProgress();
             startPoints = 0L;
         }
