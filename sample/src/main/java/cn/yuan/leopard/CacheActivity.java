@@ -1,17 +1,12 @@
 package cn.yuan.leopard;
 
-import android.content.Intent;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.yuan.leopardkit.LeopardHttp;
 import com.yuan.leopardkit.http.LeopardClient;
-import com.yuan.leopardkit.http.base.HttpMethod;
 import com.yuan.leopardkit.http.factory.CacheFactory;
-import com.yuan.leopardkit.http.factory.RequestComFactory;
 import com.yuan.leopardkit.http.factory.RequestJsonFactory;
 import com.yuan.leopardkit.interfaces.HttpRespondResult;
 import com.yuan.leopardkit.ui.activitys.LeopardActivity;
@@ -48,7 +43,8 @@ public class CacheActivity extends LeopardActivity implements View.OnClickListen
         LeopardClient.Builder builder = new LeopardClient.Builder()
                 .addGsonConverterFactory(GsonConverterFactory.create())
                 .addRxJavaCallAdapterFactory(RxJavaCallAdapterFactory.create())
-                .addCacheFactory(CacheFactory.create(this))
+                .addCacheFactory(CacheFactory.create(this))//只使用离线缓存
+//                .addCacheFactory(CacheFactory.create(this,true))//使用在线缓存
                 .baseUrl(url);
         return builder;
     }

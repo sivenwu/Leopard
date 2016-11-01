@@ -19,10 +19,21 @@ android {
     }
 }
 
+repositories {
+    maven { url = 'https://dl.bintray.com/yuancloud/maven/' }
+
+}
+
 dependencies {
     compile fileTree(include: ['*.jar'], dir: 'libs')
     testCompile 'junit:junit:4.12'
     compile 'com.android.support:appcompat-v7:23.1.1'
-    compile project(':leopardkit')
     compile 'com.android.support:design:23.4.0'
+
+    //leopard
+//    compile project(':leopardkit')
+    // 1.0 - 1.1 提供基本请求、下载、上传功能
+    // 1.2 增加在线与离线缓存功能，支持Post与get，详情使用看demo
+    compile 'cn.yuancloud.app:leopardkit:1.2'
+
 }

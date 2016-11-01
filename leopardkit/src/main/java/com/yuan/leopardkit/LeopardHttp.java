@@ -43,7 +43,6 @@ public class LeopardHttp {
      * 用之前必须先初始化主机域名
      *
      * @param address
-     * @return
      */
     public static void init(String address, Context context) {
         ADDRESS = address;
