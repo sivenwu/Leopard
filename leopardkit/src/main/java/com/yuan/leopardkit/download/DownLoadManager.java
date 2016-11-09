@@ -113,4 +113,8 @@ public class DownLoadManager {
         downloadInfo.getDownLoadTask().stop();
     }
 
+    public void pauseTask(DownloadInfo downloadInfo) {
+      downloadInfo.getDownLoadTask().pause();
+    }
+
 }
