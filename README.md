@@ -6,6 +6,17 @@ Leopard 意为猎豹，在所有猫科动物中。猎豹体型最小，速度快
 ##Leopard，目前实现功能
 提供一个满足日常需求的HTTP线程安全请求封装Library，底层由Retrofit+Okhttp+RxJava支持，通过构建者builder设计模式实现。目前实现POST、GET（支持自定义头文件、表单键值对请求、自定义数据源等基本请求）、文件上传管理（支持单文件上传与多文件上传，不限制文件类型）、文件下载管理（支持单文件下载与多文件下载、不限制文件类型、支持大文件下载与断点下载）
 
+## 更新日志
+1.1 提供基本请求、下载、上传功能
+1.2 增加在线与离线缓存功能，支持Post与GET
+1.3
+``` java
+1、添加下载任务限制，入口addtask返回是否添加任务成功 DWONLOAD
+2、修复自定义下载路径不能自动创建路径bug
+3、添加网络突然中断或者没有网络的时候，下载暂停并且进行回掉
+4、优化Leopard入口初始化，init只针对leopard工具初始化，如果需要进行请求，在初始化后调用bindServer进行绑定主机域名
+```
+
 ##演示
 
 ![Leopard演示.jpg](http://upload-images.jianshu.io/upload_images/2516602-e7f52082af597001.jpg?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
@@ -20,7 +31,7 @@ repositories {
     ...
 }
 
-compile 'cn.yuancloud.app:leopardkit:1.1'
+compile 'cn.yuancloud.app:leopardkit:1.3'
 ````
 详情使用方法可以看kit里面的sample工程，下面也会举例使用方法。
 
@@ -133,9 +144,11 @@ final Observable.Transformer schedulersTransformer = new Observable.Transformer(
 #### 0. 初始化
 
 `````
-// 初始化主机域名与上下文
+// 初始化
 // 建议传入getApplication
-LeopardHttp.init("http://wxwusy.applinzi.com/leopardWeb/app/",this);
+LeopardHttp.init(this);//如果只想用下载 上传，直接初始化即可
+// 如果需要进行请求，绑定主机域名
+LeopardHttp.bindServer("http://wxwusy.applinzi.com/leopardWeb/app/");// 如果用到请求，要提前绑定域名喔
 `````
 
 #### 1. 基本请求
