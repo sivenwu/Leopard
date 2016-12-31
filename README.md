@@ -13,7 +13,7 @@ Leopard 意为猎豹，在所有猫科动物中。猎豹体型最小，速度快
 
 1.3
 ``` java
-1、添加下载任务限制，入口addtask返回是否添加任务成功 DWONLOAD
+1、添加下载任务限制，入口addtask返回是否添加任务成功
 2、修复自定义下载路径不能自动创建路径bug
 3、添加网络突然中断或者没有网络的时候，下载暂停并且进行回掉
 4、优化Leopard入口初始化，init只针对leopard工具初始化，如果需要进行请求，在初始化后调用bindServer进行绑定主机域名
@@ -43,9 +43,9 @@ compile 'cn.yuancloud.app:leopardkit:1.3'
 通常，大部分开发者都会用单例模式去封装网络框架。的确，对于网络请求严重消耗内存的对象，单例模式很大程度减少了内存开销啊。但是，单例模式职责太单一，灵活性真的不高。所以在这里我强烈建议用构建者模式，需要什么资源只要通知单一职责构建者Builder即可，这样不仅仅可以减少内存开销、又可以灵活性构建需要的对象，一举两得。
 
 
-###二、7个Factory支持
+###二、8个Factory支持
 
-这里的Factory，包括Converter.Factory与Interceptor支持。目前包括Retrofit底层已经实现的GsonConverterFactory与RxJavaCallAdapterFactory，Leopard 添加了额外5个Factory，下面具体简单说明下额外的5个Factory与Retrofit底层已经实现的Factory。
+这里的Factory，包括Converter.Factory与Interceptor支持。目前包括Retrofit底层已经实现的GsonConverterFactory与RxJavaCallAdapterFactory，Leopard 添加了额外6个Factory，下面具体简单说明下额外的5个Factory与Retrofit底层已经实现的Factory。
 
 （1）GsonConverterFactory  
 
