@@ -2,6 +2,7 @@ package cn.yuan.leopard.fragments;
 
 
 import android.os.Bundle;
+import android.os.Environment;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -83,7 +84,7 @@ public class DownloadFragment extends Fragment implements View.OnClickListener {
             String url = "http://f1.market.xiaomi.com/download/AppStore/03f82a470d7ac44300d8700880584fe856387aac6/cn.wsy.travel.apk";
             DownloadInfo info = new DownloadInfo();
             info.setUrl(url);
-            info.setProgress(0L);
+            info.setFileSavePath(Environment.getExternalStorageDirectory() + "/AAADwonload/");// 自定义下载路径
             info.setFileName("IRecord_" + i + ".apk");
             DownLoadModel model = new DownLoadModel();
             model.setInfo(info);

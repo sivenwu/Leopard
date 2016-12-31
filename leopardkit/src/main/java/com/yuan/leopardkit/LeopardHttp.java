@@ -1,6 +1,9 @@
 package com.yuan.leopardkit;
 
 import android.content.Context;
+import android.content.IntentFilter;
+import android.net.ConnectivityManager;
+import android.net.wifi.WifiManager;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
@@ -40,13 +43,28 @@ public class LeopardHttp {
     private static boolean useCache = false;
 
     /**
-     * 用之前必须先初始化主机域名
-     *
-     * @param address
+     * leopard初始化
      */
-    public static void init(String address, Context context) {
-        ADDRESS = address;
+    public static void init(Context context) {
         HttpDbUtil.initHttpDB(context.getApplicationContext());
+//        registerNetWorkListener(context);
+    }
+
+    /**
+     * 绑定主机域名
+     * @param server 服务器域名
+     * @param port 服务器端口
+     */
+    public static void bindServer(String server,int port){
+        ADDRESS = port==-1?server+""+port : server;
+    }
+
+    /**
+     * 绑定主机域名 默认80端口
+     * @param server 服务器域名
+     */
+    public static void bindServer(String server){
+        ADDRESS = server;
     }
 
     private static LeopardClient.Builder getBuilder(Context mC) {
@@ -68,6 +86,28 @@ public class LeopardHttp {
      */
     public static void setUseCache(boolean cache) {
         useCache = cache;
+    }
+
+    private static void registerNetWorkListener(Context context){
+        IntentFilter filter = new IntentFilter();
+        filter.addAction(WifiManager.WIFI_STATE_CHANGED_ACTION);
+        filter.addAction(WifiManager.NETWORK_STATE_CHANGED_ACTION);
+        filter.addAction(ConnectivityManager.CONNECTIVITY_ACTION);
+
+        NetWorkStateReceiver mReceiver = new NetWorkStateReceiver();
+        mReceiver.setNetWorkStateListenerl(new NetWorkStateReceiver.NetWorkStateListener() {
+            @Override
+            public void disConnect() {
+                DownLoadManager.getManager().pauseAllTask();
+            }
+
+            @Override
+            public void resumeConnect() {
+                DownLoadManager.getManager().startAllTask();
+            }
+        });
+
+        context.registerReceiver(mReceiver, filter);
     }
 
     /**
@@ -98,27 +138,40 @@ public class LeopardHttp {
      * @param iProgress
      * @return 拥有Task的下载实体
      */
-    public static DownloadInfo DWONLOAD(final DownloadInfo downloadInfo, final IProgress iProgress) {
+    public static boolean DWONLOAD(final DownloadInfo downloadInfo, final IProgress iProgress) {
         final Handler handler = new Handler(Looper.getMainLooper()) {
             @Override
             public void handleMessage(Message msg) {
                 super.handleMessage(msg);
-                if (downloadInfo.getState() != DownLoadManager.STATE_WAITING)
-                    iProgress.onProgress(msg.arg1, msg.arg2, msg.arg1 >= msg.arg2);
+                if (msg.what == 1000) {
+                    if (downloadInfo.getState() != DownLoadManager.STATE_WAITING)
+                        iProgress.onProgress(msg.arg1, msg.arg2, msg.arg1 >= msg.arg2);
+                }else{
+                    if (msg.obj !=null && (msg.obj instanceof String))
+                    iProgress.onFailed((String) msg.obj);
+                }
             }
         };
 
-        DownLoadManager.getManager().addTask(downloadInfo, new FileRespondResult() {
+        return DownLoadManager.getManager().addTask(downloadInfo, new FileRespondResult() {
             @Override
             public void onExecuting(long progress, long total, boolean done) {
                 Message message = new Message();
+                message.what = 1000;
                 message.arg1 = (int) progress;
                 message.arg2 = (int) total;
                 handler.sendMessageDelayed(message,HANDER_DELAYED_TIME);
             }
+
+            @Override
+            public void onFailed(String reason) {
+                Message message = new Message();
+                message.what = 1001;
+                message.obj = reason;
+                handler.sendMessageDelayed(message,HANDER_DELAYED_TIME);
+            }
         });
 
-        return downloadInfo;
     }
 
     public static void UPLOAD(FileUploadEnetity uploadEnetity, final IProgress iProgress) {
@@ -126,7 +179,12 @@ public class LeopardHttp {
             @Override
             public void handleMessage(Message msg) {
                 super.handleMessage(msg);
+                if (msg.what == 1000){
                 iProgress.onProgress(msg.arg1, msg.arg2, msg.arg1 >= msg.arg2);
+                }else{
+                    if (msg.obj !=null && (msg.obj instanceof String))
+                        iProgress.onFailed((String) msg.obj);
+                }
             }
         };
 
@@ -134,8 +192,17 @@ public class LeopardHttp {
             @Override
             public void onExecuting(long progress, long total, boolean done) {
                 Message message = new Message();
+                message.what = 1000;
                 message.arg1 = (int) progress;
                 message.arg2 = (int) total;
+                handler.sendMessageDelayed(message,HANDER_DELAYED_TIME);
+            }
+
+            @Override
+            public void onFailed(String reason) {
+                Message message = new Message();
+                message.what = 1001;
+                message.obj = reason;
                 handler.sendMessageDelayed(message,HANDER_DELAYED_TIME);
             }
         };

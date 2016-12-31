@@ -33,4 +33,6 @@ public abstract class FileRespondResult extends HttpRespondResult{
     // TODO: 2016/8/25 这里回调的时候不是主线程喔，所以必须通过信息机制或者其他通知给主线程更新UI
     public abstract void onExecuting(long progress, long total, boolean done);
 
+    public abstract void onFailed(String reason);
+
 }

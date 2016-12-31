@@ -1,5 +1,6 @@
 package com.yuan.leopardkit.http.factory;
 
+import com.yuan.leopardkit.download.DownLoadManager;
 import com.yuan.leopardkit.download.model.DownLoadResponseBody;
 import com.yuan.leopardkit.download.model.DownloadInfo;
 import com.yuan.leopardkit.interfaces.FileRespondResult;
@@ -36,9 +37,18 @@ public class DownLoadFileFactory implements Interceptor {
     }
 
     @Override
-    public Response intercept(Chain chain) throws IOException {
+    public Response intercept(Chain chain) {
         Request request = chain.request().newBuilder().addHeader("RANGE", "bytes=" + downloadInfo.getBreakProgress() + "-").build();
-        Response originalResponse = chain.proceed(request);
+        Response originalResponse = null;
+        try {
+            originalResponse = chain.proceed(request);
+        } catch (IOException e) {
+            DownLoadManager.getManager().pauseTask(this.downloadInfo);
+            this.fileRespondResult.onFailed(e.getMessage().toString());
+            e.printStackTrace();
+
+            return originalResponse;
+        }
         DownLoadResponseBody body = new DownLoadResponseBody(this.downloadInfo ,originalResponse.body(), fileRespondResult);
         Response response = originalResponse.newBuilder().body(body).build();
         return response;

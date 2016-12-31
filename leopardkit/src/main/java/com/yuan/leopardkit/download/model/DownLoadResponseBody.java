@@ -1,5 +1,7 @@
 package com.yuan.leopardkit.download.model;
 
+import android.util.Log;
+
 import com.yuan.leopardkit.download.DownLoadManager;
 import com.yuan.leopardkit.interfaces.FileRespondResult;
 
@@ -72,6 +74,13 @@ public class DownLoadResponseBody extends ResponseBody {
                 try {
                     bytesRead = super.read(sink, byteCount);
                 } catch (Exception e){
+                    bytesRead = 0;
+                    DownLoadManager.getManager().pauseTask(downloadInfo);
+                    if (e.getMessage() != null){
+                    postMainThread(e.getMessage().toString());
+                    }else{
+                        postMainThread("");
+                    }
                     e.printStackTrace();
                 }
                 if (bytesRead != -1) {
@@ -93,5 +102,9 @@ public class DownLoadResponseBody extends ResponseBody {
 
     private void postMainThread(long progress,long total){
         fileRespondResult.onExecuting(progress,total,progress>=total);
+    }
+
+    private void postMainThread(String message){
+        fileRespondResult.onFailed(message);
     }
 }

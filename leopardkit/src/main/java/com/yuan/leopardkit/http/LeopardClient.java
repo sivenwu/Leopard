@@ -172,6 +172,11 @@ public class LeopardClient {
                     }
                     callback.onExecuting(curUploadProgress + (progress), enetity.getFilesTotalSize(), curUploadProgress + (progress) == enetity.getFilesTotalSize());
                 }
+
+                @Override
+                public void onFailed(String reason) {
+                    callback.onFailed(reason);
+                }
             });
             params.put("file[]\"; filename=\"" + file.getName(), body_up);
         }
@@ -197,9 +202,10 @@ public class LeopardClient {
                     Response response = okHttpClient.newCall(request).execute();
                     if (downloadInfo.getFileLength() <= 0)
                         downloadInfo.setFileLength(response.body().contentLength());
-                    downloadInfo.getDownLoadTask().writeCache(response.body().byteStream());
+                    DownLoadManager.getManager().writeCache(downloadInfo,response.body().byteStream());
                     // TODO: 2016/8/31 更新数据库 这里记得做下数据库延时更新
                     HttpDbUtil.instance.updateState(downloadInfo);
+                    if (downloadInfo.getState() != DownLoadManager.STATE_PAUSE)
                     subscriber.onNext(response.body());
                 } catch (IOException e) {
                     downloadInfo.setState(DownLoadManager.STATE_ERROR);

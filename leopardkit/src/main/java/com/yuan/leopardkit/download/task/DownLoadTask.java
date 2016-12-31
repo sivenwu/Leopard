@@ -106,6 +106,12 @@ public class DownLoadTask {
     }
 
     public void writeCache(InputStream inputStream){
+
+        File fileDir = new File(downloadInfo.getFileSavePath());
+        if (!fileDir.exists()){
+            fileDir.mkdirs();
+        }
+
         String savePath = downloadInfo.getFileSavePath() + downloadInfo.getFileName() +fileCacheNem;
         File file = new File(savePath);
         if (isStart){//如果是重新下载

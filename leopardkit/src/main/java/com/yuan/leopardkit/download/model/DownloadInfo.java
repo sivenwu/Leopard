@@ -11,7 +11,7 @@ import com.yuan.leopardkit.models.FileLoadInfo;
  */
 public class DownloadInfo extends FileLoadInfo {
 
-    private DownLoadTask downLoadTask;
+//    private DownLoadTask downLoadTask;
 
     private DownLoadSubscriber subscriber;
 
@@ -19,6 +19,7 @@ public class DownloadInfo extends FileLoadInfo {
     public DownloadInfo() {
         this.setState(DownLoadManager.STATE_WAITING);
         this.setType(0);
+        this.setProgress(0L);
     }
 
     public DownLoadSubscriber getSubscriber() {
@@ -29,12 +30,12 @@ public class DownloadInfo extends FileLoadInfo {
         this.subscriber = subscriber;
     }
 
-    public DownLoadTask getDownLoadTask() {
-        return downLoadTask;
-    }
-
-    public void setDownLoadTask(DownLoadTask downLoadTask) {
-        this.downLoadTask = downLoadTask;
-    }
+//    public DownLoadTask getDownLoadTask() {
+//        return downLoadTask;
+//    }
+//
+//    public void setDownLoadTask(DownLoadTask downLoadTask) {
+//        this.downLoadTask = downLoadTask;
+//    }
 
 }

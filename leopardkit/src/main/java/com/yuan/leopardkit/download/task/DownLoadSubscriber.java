@@ -2,6 +2,7 @@ package com.yuan.leopardkit.download.task;
 
 import android.util.Log;
 
+import com.yuan.leopardkit.download.DownLoadManager;
 import com.yuan.leopardkit.download.model.DownloadInfo;
 import com.yuan.leopardkit.interfaces.FileRespondResult;
 
@@ -43,6 +44,7 @@ public class DownLoadSubscriber<T extends ResponseBody> extends Subscriber<T> {
 
     @Override
     public void onNext(T responseBody) {
+//        if (this.downloadInfo.getState() != DownLoadManager.STATE_PAUSE)
         task.downFinsh();
     }
 }

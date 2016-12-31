@@ -88,6 +88,11 @@ public class UploadFragment extends Fragment implements UploadAdapter.IUploadGet
                             Toast.makeText(getActivity(),"所有图片上传成功！！",Toast.LENGTH_SHORT).show();
                         }
                     }
+
+                    @Override
+                    public void onFailed(String reason) {
+                        Toast.makeText(getActivity(),reason,Toast.LENGTH_SHORT).show();
+                    }
                 });
             }
         });

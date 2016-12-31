@@ -23,8 +23,10 @@ public class MainActivity extends LeopardActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        LeopardHttp.init("http://wxwusy.applinzi.com/leopardWeb/app/",this);
-//        LeopardHttp.setUseCache(true);
+        /**  建议初始化放在application **/
+        LeopardHttp.init(this);//如果只想用下载 上传，直接初始化即可
+        LeopardHttp.bindServer("http://wxwusy.applinzi.com/leopardWeb/app/");// 如果用到请求，要提前绑定域名喔
+//        LeopardHttp.setUseCache(true);// 是否启动缓存
         initView();
     }
 

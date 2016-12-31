@@ -1,6 +1,12 @@
 package com.yuan.leopardkit.download;
 
+import android.content.Context;
+import android.content.IntentFilter;
+import android.net.ConnectivityManager;
+import android.net.wifi.WifiManager;
 import android.os.Environment;
+import android.util.ArrayMap;
+import android.util.SparseArray;
 
 import com.yuan.leopardkit.db.HttpDbUtil;
 import com.yuan.leopardkit.download.model.DownloadInfo;
@@ -8,6 +14,8 @@ import com.yuan.leopardkit.download.task.DownLoadTask;
 import com.yuan.leopardkit.interfaces.FileRespondResult;
 
 import java.io.File;
+import java.io.InputStream;
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -32,6 +40,9 @@ public class DownLoadManager {
 
     private FileRespondResult callback;
     private List<DownloadInfo> downloadInfosList;
+    private SparseArray taskArray;
+
+    private int limitNum = -1;//默认不限制现在数量
 
     public static DownLoadManager getManager(){
         if (manager == null){
@@ -40,23 +51,46 @@ public class DownLoadManager {
         return manager;
     }
 
-    public DownLoadManager() {
+    private DownLoadManager() {
         //初始化一系列
         deFaultDir = Environment.getExternalStorageDirectory() + "/YuanDwonload/";
         downloadInfosList = new ArrayList<>();
+        taskArray = new SparseArray();
         if (!new File(deFaultDir).exists()) new File(deFaultDir).mkdirs();
     }
 
-    public void addTask(DownloadInfo downloadInfo, FileRespondResult listener){
+    public void setLimitTaskNum(int num){
+        this.limitNum = num;
+    }
+
+    private boolean limitVaild(){
+        if (this.limitNum == -1) return true;
+        else{
+            return downloadInfosList.size() > limitNum;
+        }
+    }
+
+    public void writeCache(DownloadInfo downloadInfo, InputStream is){
+        DownLoadTask task = (DownLoadTask) taskArray.get((int) downloadInfo.getKey());
+        task.writeCache(is);
+    }
+
+    public boolean addTask(DownloadInfo downloadInfo, FileRespondResult listener){
+
+        // 如果设置了限制 非有效则拒绝添加任务
+        if (!limitVaild()){ return false;}
+
         if (downloadInfo.getFileSavePath() == null || downloadInfo.getFileSavePath().equals("")){
             downloadInfo.setFileSavePath(deFaultDir);
         }
         DownLoadTask task = new DownLoadTask(downloadInfo,listener);
-        downloadInfo.setDownLoadTask(task);
+//        downloadInfo.setDownLoadTask(task);
         downloadInfosList.add(downloadInfo);
         // TODO: 2016/8/31 添加一条记录
         long key =  HttpDbUtil.instance.insert(downloadInfo);
+        taskArray.put((int) key,task);
         downloadInfo.setKey(key);
+        return true;
     }
 
     public void removeTask(DownloadInfo downloadInfo){
@@ -66,55 +100,73 @@ public class DownLoadManager {
             if (downFile.exists()){
                 downFile.delete();
             }
+            taskArray.remove((int) downloadInfo.getKey());
         }
         HttpDbUtil.instance.delete(downloadInfo);
     }
 
     public void removeAllTask(){
         for (DownloadInfo downloadInfo : downloadInfosList){
-            downloadInfo.getDownLoadTask().remove();
+            DownLoadTask task = (DownLoadTask) taskArray.get((int) downloadInfo.getKey());
+            task.remove();
         }
         downloadInfosList.clear();
+        taskArray.clear();
     }
 
     public void pauseAllTask(){
         for (DownloadInfo downloadInfo : downloadInfosList){
-            downloadInfo.getDownLoadTask().pause();
+            pauseTask(downloadInfo);
         }
     }
 
     public void restartAllTask(){
         for (DownloadInfo downloadInfo : downloadInfosList){
-            downloadInfo.getDownLoadTask().download(true);
+            restartTask(downloadInfo);
         }
     }
 
     public void startAllTask(){
         for (DownloadInfo downloadInfo : downloadInfosList){
-            downloadInfo.getDownLoadTask().download(false);
+            startTask(downloadInfo);
         }
     }
 
     public void stopAllTask(){
         for (DownloadInfo downloadInfo : downloadInfosList){
-            downloadInfo.getDownLoadTask().stop();
+            stopTask(downloadInfo);
+        }
+    }
+
+    public void resumeTask(DownloadInfo downloadInfo){
+        DownLoadTask task = (DownLoadTask) taskArray.get((int) downloadInfo.getKey());
+        task.download(false);
+    }
+
+    public void resumeAllTask(){
+        for (DownloadInfo downloadInfo : downloadInfosList){
+            resumeTask(downloadInfo);
         }
     }
 
     public void restartTask(DownloadInfo downloadInfo){
-        downloadInfo.getDownLoadTask().download(true);
+        DownLoadTask task = (DownLoadTask) taskArray.get((int) downloadInfo.getKey());
+        task.download(true);
     }
 
     public void startTask(DownloadInfo downloadInfo){
-        downloadInfo.getDownLoadTask().download(false);
+        DownLoadTask task = (DownLoadTask) taskArray.get((int) downloadInfo.getKey());
+        task.download(false);
     }
 
     public void stopTask(DownloadInfo downloadInfo){
-        downloadInfo.getDownLoadTask().stop();
+        DownLoadTask task = (DownLoadTask) taskArray.get((int) downloadInfo.getKey());
+        task.stop();
     }
 
     public void pauseTask(DownloadInfo downloadInfo) {
-      downloadInfo.getDownLoadTask().pause();
+        DownLoadTask task = (DownLoadTask) taskArray.get((int) downloadInfo.getKey());
+        task.pause();
     }
 
 }

@@ -2,12 +2,14 @@ package cn.yuan.leopard.adapters;
 
 import android.content.Context;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ProgressBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.yuan.leopardkit.LeopardHttp;
 import com.yuan.leopardkit.download.DownLoadManager;
@@ -69,7 +71,7 @@ public class DownLoadApater extends RecyclerView.Adapter<DownLoadApater.MyViewHo
         }
 
         //add task
-        LeopardHttp.DWONLOAD(info, new IProgress() {
+        boolean result = LeopardHttp.DWONLOAD(info, new IProgress() {
             @Override
             public void onProgress(long progress, long total, boolean done) {
 
@@ -108,7 +110,15 @@ public class DownLoadApater extends RecyclerView.Adapter<DownLoadApater.MyViewHo
                     holder.prgressTv.setText(holder.prgressTv.getText() + " 下載完成！");
                 }
             }
+
+            @Override
+            public void onFailed(String reason) {
+                Toast.makeText(context,reason,Toast.LENGTH_LONG).show();
+                notifyDataSetChanged();
+            }
         });
+
+        Log.i("leopard","下载任务是否添加成功: " +result +"");
 
 
         holder.downBtn.setOnClickListener(new View.OnClickListener() {
@@ -117,25 +127,25 @@ public class DownLoadApater extends RecyclerView.Adapter<DownLoadApater.MyViewHo
 
                 if (info.getState() == DownLoadManager.STATE_FINISH) {
                     holder.downBtn.setText("暫停");
-                    info.getDownLoadTask().reStart();
+                    DownLoadManager.getManager().restartTask(info);
                     return;
                 }
 
                 if (info.getState() == DownLoadManager.STATE_WAITING) {
                     holder.downBtn.setText("暂停");
-                    info.getDownLoadTask().reStart();
+                    DownLoadManager.getManager().restartTask(info);
                     return;
                 }
 
                 if (info.getState() == DownLoadManager.STATE_PAUSE) {
                     holder.downBtn.setText("暫停");
-                    data.get(position).getInfo().getDownLoadTask().resume();
+                    DownLoadManager.getManager().resumeTask(info);
                     return;
                 }
 
                 if (info.getState() == DownLoadManager.STATE_DOWNLOADING) {
                     holder.downBtn.setText("继续");
-                    data.get(position).getInfo().getDownLoadTask().pause();
+                    DownLoadManager.getManager().pauseTask(info);
                     return;
                 }
             }

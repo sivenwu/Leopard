@@ -7,4 +7,6 @@ package com.yuan.leopardkit.interfaces;
 public interface IProgress {
 
     public void onProgress(long progress, long total, boolean done);
+
+    public void onFailed(String reason);
 }
