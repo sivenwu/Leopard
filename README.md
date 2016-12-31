@@ -6,6 +6,19 @@ Leopard 意为猎豹，在所有猫科动物中。猎豹体型最小，速度快
 ##Leopard，目前实现功能
 提供一个满足日常需求的HTTP线程安全请求封装Library，底层由Retrofit+Okhttp+RxJava支持，通过构建者builder设计模式实现。目前实现POST、GET（支持自定义头文件、表单键值对请求、自定义数据源等基本请求）、文件上传管理（支持单文件上传与多文件上传，不限制文件类型）、文件下载管理（支持单文件下载与多文件下载、不限制文件类型、支持大文件下载与断点下载）
 
+## 更新日志
+1.1 提供基本请求、下载、上传功能
+
+1.2 增加在线与离线缓存功能，支持Post与GET
+
+1.3
+``` java
+1、添加下载任务限制，入口addtask返回是否添加任务成功
+2、修复自定义下载路径不能自动创建路径bug
+3、添加网络突然中断或者没有网络的时候，下载暂停并且进行回掉
+4、优化Leopard入口初始化，init只针对leopard工具初始化，如果需要进行请求，在初始化后调用bindServer进行绑定主机域名
+```
+
 ##演示
 
 ![Leopard演示.jpg](http://upload-images.jianshu.io/upload_images/2516602-e7f52082af597001.jpg?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
@@ -20,7 +33,7 @@ repositories {
     ...
 }
 
-compile 'cn.yuancloud.app:leopardkit:1.1'
+compile 'cn.yuancloud.app:leopardkit:1.3'
 ````
 详情使用方法可以看kit里面的sample工程，下面也会举例使用方法。
 
@@ -30,9 +43,9 @@ compile 'cn.yuancloud.app:leopardkit:1.1'
 通常，大部分开发者都会用单例模式去封装网络框架。的确，对于网络请求严重消耗内存的对象，单例模式很大程度减少了内存开销啊。但是，单例模式职责太单一，灵活性真的不高。所以在这里我强烈建议用构建者模式，需要什么资源只要通知单一职责构建者Builder即可，这样不仅仅可以减少内存开销、又可以灵活性构建需要的对象，一举两得。
 
 
-###二、7个Factory支持
+###二、8个Factory支持
 
-这里的Factory，包括Converter.Factory与Interceptor支持。目前包括Retrofit底层已经实现的GsonConverterFactory与RxJavaCallAdapterFactory，Leopard 添加了额外5个Factory，下面具体简单说明下额外的5个Factory与Retrofit底层已经实现的Factory。
+这里的Factory，包括Converter.Factory与Interceptor支持。目前包括Retrofit底层已经实现的GsonConverterFactory与RxJavaCallAdapterFactory，Leopard 添加了额外6个Factory，下面具体简单说明下额外的5个Factory与Retrofit底层已经实现的Factory。
 
 （1）GsonConverterFactory  
 
@@ -62,6 +75,9 @@ Retrofit底层支持Gson，这个Factory提供当你需要调整json里面的一
 
 当你需要自定义头文件的时候，，在构造client的时需要添加这个Factory。底层会自动帮你添加到请求头。
 
+(8) CacheFactory
+
+提供POST与GET缓存，支持在线缓存与离线缓存。
 
 ###三、关于基本请求
 RxJava的好处，可以保证线程执行安全。由于网络请求不能执行在主线程，因此在Leopard中，将所有网络执行都放在io线程中，确保线程执行安全。例如以下配置：
@@ -133,9 +149,11 @@ final Observable.Transformer schedulersTransformer = new Observable.Transformer(
 #### 0. 初始化
 
 `````
-// 初始化主机域名与上下文
+// 初始化
 // 建议传入getApplication
-LeopardHttp.init("http://wxwusy.applinzi.com/leopardWeb/app/",this);
+LeopardHttp.init(this);//如果只想用下载 上传，直接初始化即可
+// 如果需要进行请求，绑定主机域名
+LeopardHttp.bindServer("http://wxwusy.applinzi.com/leopardWeb/app/");// 如果用到请求，要提前绑定域名喔
 `````
 
 #### 1. 基本请求
