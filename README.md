@@ -36,7 +36,7 @@ Leopard 意为猎豹，在所有猫科动物中。猎豹体型最小，速度快
 
 ##Leopard，引用方法：
 注：目前只支持Android Studio版本引用。
-### 1.1 版本 使用方法：
+### 1.4 版本(其他版本对应替换即可) 使用方法：
 ####一、在application中的build.gradle引入:
 ````
 repositories {
@@ -44,7 +44,7 @@ repositories {
     ...
 }
 
-compile 'cn.yuancloud.app:leopardkit:1.3'
+compile 'cn.yuancloud.app:leopardkit:1.4'
 ````
 详情使用方法可以看kit里面的sample工程，下面也会举例使用方法。
 
