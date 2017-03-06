@@ -19,7 +19,7 @@ import android.widget.Button;
 import android.widget.Toast;
 
 import com.yuan.leopardkit.LeopardHttp;
-import com.yuan.leopardkit.interfaces.IProgress;
+import com.yuan.leopardkit.interfaces.UploadIProgress;
 import com.yuan.leopardkit.upload.FileUploadEnetity;
 
 import java.io.File;
@@ -79,10 +79,11 @@ public class UploadFragment extends Fragment implements UploadAdapter.IUploadGet
                     }
                 }
                 progressDialog.show();
-                LeopardHttp.UPLOAD(new FileUploadEnetity("upload.php",fileList), new IProgress() {
+                LeopardHttp.UPLOAD(new FileUploadEnetity("http://wxwusy.applinzi.com/leopardWeb/app/sample/upload.php",fileList), new UploadIProgress() {
+
                     @Override
-                    public void onProgress(long progress, long total, boolean done) {
-//                        Log.i("yuan","upload state: "+progress + " - "+total);
+                    public void onProgress(long progress, long total, int index, boolean done) {
+                        Log.i("yuan","upload state: "+progress + " - "+total);
                         if (done){
                             progressDialog.dismiss();
                             Toast.makeText(getActivity(),"所有图片上传成功！！",Toast.LENGTH_SHORT).show();
@@ -90,8 +91,14 @@ public class UploadFragment extends Fragment implements UploadAdapter.IUploadGet
                     }
 
                     @Override
-                    public void onFailed(String reason) {
+                    public void onSucess(String result) {
+                        Toast.makeText(getActivity(),result,Toast.LENGTH_SHORT).show();
+                    }
+
+                    @Override
+                    public void onFailed(Throwable e, String reason) {
                         Toast.makeText(getActivity(),reason,Toast.LENGTH_SHORT).show();
+
                     }
                 });
             }

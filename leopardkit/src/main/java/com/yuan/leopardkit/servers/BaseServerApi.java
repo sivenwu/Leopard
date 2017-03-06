@@ -49,9 +49,9 @@ public interface BaseServerApi {
 
 
     @Multipart
-    @POST("{path}")
+    @POST()
     Observable<ResponseBody> uploadFile(
-            @Path(value = "path", encoded = true) String url,
+            @Url String url,
             @PartMap() Map<String, RequestBody> maps);
 
     //支持大文件

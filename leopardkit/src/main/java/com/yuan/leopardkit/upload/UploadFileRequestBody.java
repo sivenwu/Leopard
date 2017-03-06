@@ -1,7 +1,5 @@
 package com.yuan.leopardkit.upload;
 
-import com.yuan.leopardkit.interfaces.IProgress;
-
 import java.io.File;
 import java.io.IOException;
 
@@ -20,17 +18,17 @@ import okio.Sink;
 public class UploadFileRequestBody extends RequestBody {
 
     private RequestBody mRequestBody;
-    private IProgress mProgressListener;
+    private UploadBodyListener mProgressListener;
 
     private BufferedSink bufferedSink;
 
 
-    public UploadFileRequestBody(File file, IProgress progressListener) {
+    public UploadFileRequestBody(File file, UploadBodyListener progressListener) {
         this.mRequestBody = RequestBody.create(MediaType.parse("multipart/form-data"), file);
         this.mProgressListener = progressListener;
     }
 
-    public UploadFileRequestBody(RequestBody requestBody, IProgress progressListener) {
+    public UploadFileRequestBody(RequestBody requestBody, UploadBodyListener progressListener) {
         this.mRequestBody = requestBody;
         this.mProgressListener = progressListener;
     }
@@ -79,5 +77,10 @@ public class UploadFileRequestBody extends RequestBody {
                 mProgressListener.onProgress(bytesWritten, contentLength, bytesWritten == contentLength);
             }
         };
+    }
+
+    // body内部回调
+    public interface UploadBodyListener{
+        public void onProgress(long progress, long total, boolean done);
     }
 }

@@ -40,5 +40,12 @@ dependencies {
     //2、修复自定义下载路径不能自动创建路径bug
     //3、添加网络突然中断或者没有网络的时候，下载暂停并且进行回掉
     //4、优化Leopard入口初始化，init只针对leopard工具初始化，如果需要进行请求，在初始化后调用bindServer进行绑定主机域名
-    compile 'cn.yuancloud.app:leopardkit:1.3'
+//    compile 'cn.yuancloud.app:leopardkit:1.3'
+
+    // 1.4 :
+    // 1、修改上传与下载回调逻辑，优化性能，减少回调造成卡顿
+    // 2、允许上传下载进行手动close
+    // 3、上传逻辑独立抽成UploadHelper,代理完成上传逻辑
+    // 4、下载逻辑独立抽成DownloadHelper,代理完成下载逻辑
+    compile 'cn.yuancloud.app:leopardkit:1.4'
 }

@@ -1,9 +1,6 @@
 package com.yuan.leopardkit.download.model;
 
-import android.util.Log;
-
 import com.yuan.leopardkit.download.DownLoadManager;
-import com.yuan.leopardkit.interfaces.FileRespondResult;
 
 import java.io.IOException;
 
@@ -23,17 +20,19 @@ public class DownLoadResponseBody extends ResponseBody {
 
     private DownloadInfo downloadInfo;
     private ResponseBody mResponseBody;
-    private FileRespondResult fileRespondResult;
+//    private FileRespondResult fileRespondResult;
+    // 1.4 版本更改为内部回调
+    private DownLoadBodyListener downLoadBodyListener;
     private BufferedSource bufferedSource;
 
     public DownLoadResponseBody(ResponseBody mResponseBody) {
         this.mResponseBody = mResponseBody;
     }
 
-    public DownLoadResponseBody(DownloadInfo downloadInfo, ResponseBody mResponseBody, FileRespondResult fileRespondResult) {
+    public DownLoadResponseBody(DownloadInfo downloadInfo, ResponseBody mResponseBody, DownLoadBodyListener downLoadBodyListener) {
         this.downloadInfo = downloadInfo;
         this.mResponseBody = mResponseBody;
-        this.fileRespondResult = fileRespondResult;
+        this.downLoadBodyListener = downLoadBodyListener;
     }
 
     @Override
@@ -101,10 +100,16 @@ public class DownLoadResponseBody extends ResponseBody {
     }
 
     private void postMainThread(long progress,long total){
-        fileRespondResult.onExecuting(progress,total,progress>=total);
+        downLoadBodyListener.onProgress(progress,total,progress>=total);
     }
 
     private void postMainThread(String message){
-        fileRespondResult.onFailed(message);
+        downLoadBodyListener.onFailed(message);
+    }
+
+    // body内部回调
+    public interface DownLoadBodyListener{
+        public void onProgress(long progress, long total, boolean done);
+        public void onFailed(String message);
     }
 }

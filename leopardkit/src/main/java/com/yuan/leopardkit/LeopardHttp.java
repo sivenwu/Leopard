@@ -4,9 +4,6 @@ import android.content.Context;
 import android.content.IntentFilter;
 import android.net.ConnectivityManager;
 import android.net.wifi.WifiManager;
-import android.os.Handler;
-import android.os.Looper;
-import android.os.Message;
 import android.util.Log;
 
 import com.yuan.leopardkit.db.HttpDbUtil;
@@ -16,13 +13,13 @@ import com.yuan.leopardkit.http.LeopardClient;
 import com.yuan.leopardkit.http.base.BaseEnetity;
 import com.yuan.leopardkit.http.base.HttpMethod;
 import com.yuan.leopardkit.http.factory.CacheFactory;
-import com.yuan.leopardkit.http.factory.RequestComFactory;
 import com.yuan.leopardkit.http.factory.RequestJsonFactory;
 import com.yuan.leopardkit.http.factory.UploadFileFactory;
-import com.yuan.leopardkit.interfaces.FileRespondResult;
 import com.yuan.leopardkit.interfaces.HttpRespondResult;
-import com.yuan.leopardkit.interfaces.IProgress;
+import com.yuan.leopardkit.interfaces.IDownloadProgress;
+import com.yuan.leopardkit.interfaces.UploadIProgress;
 import com.yuan.leopardkit.upload.FileUploadEnetity;
+import com.yuan.leopardkit.upload.UploadHelper;
 
 import java.util.HashMap;
 
@@ -67,6 +64,14 @@ public class LeopardHttp {
         ADDRESS = server;
     }
 
+    /**
+     * 是否使用缓存
+     * @param cache
+     */
+    public static void setUseCache(boolean cache) {
+        useCache = cache;
+    }
+
     private static LeopardClient.Builder getBuilder(Context mC) {
         LeopardClient.Builder builder =  new LeopardClient.Builder()
                 .addGsonConverterFactory(GsonConverterFactory.create())
@@ -78,14 +83,6 @@ public class LeopardHttp {
         }
 
         return builder;
-    }
-
-    /**
-     * 是否使用缓存
-     * @param cache
-     */
-    public static void setUseCache(boolean cache) {
-        useCache = cache;
     }
 
     private static void registerNetWorkListener(Context context){
@@ -135,83 +132,24 @@ public class LeopardHttp {
      * 下载入口
      *
      * @param downloadInfo
-     * @param iProgress
+     * @param iDownloadProgress
      * @return 拥有Task的下载实体
      */
-    public static boolean DWONLOAD(final DownloadInfo downloadInfo, final IProgress iProgress) {
-        final Handler handler = new Handler(Looper.getMainLooper()) {
-            @Override
-            public void handleMessage(Message msg) {
-                super.handleMessage(msg);
-                if (msg.what == 1000) {
-                    if (downloadInfo.getState() != DownLoadManager.STATE_WAITING)
-                        iProgress.onProgress(msg.arg1, msg.arg2, msg.arg1 >= msg.arg2);
-                }else{
-                    if (msg.obj !=null && (msg.obj instanceof String))
-                    iProgress.onFailed((String) msg.obj);
-                }
-            }
-        };
-
-        return DownLoadManager.getManager().addTask(downloadInfo, new FileRespondResult() {
-            @Override
-            public void onExecuting(long progress, long total, boolean done) {
-                Message message = new Message();
-                message.what = 1000;
-                message.arg1 = (int) progress;
-                message.arg2 = (int) total;
-                handler.sendMessageDelayed(message,HANDER_DELAYED_TIME);
-            }
-
-            @Override
-            public void onFailed(String reason) {
-                Message message = new Message();
-                message.what = 1001;
-                message.obj = reason;
-                handler.sendMessageDelayed(message,HANDER_DELAYED_TIME);
-            }
-        });
-
+    public static long DWONLOAD(final DownloadInfo downloadInfo, final IDownloadProgress iDownloadProgress) {
+        return DownLoadManager.getManager().addTask(downloadInfo,iDownloadProgress);
     }
 
-    public static void UPLOAD(FileUploadEnetity uploadEnetity, final IProgress iProgress) {
-        final Handler handler = new Handler(Looper.getMainLooper()) {
-            @Override
-            public void handleMessage(Message msg) {
-                super.handleMessage(msg);
-                if (msg.what == 1000){
-                iProgress.onProgress(msg.arg1, msg.arg2, msg.arg1 >= msg.arg2);
-                }else{
-                    if (msg.obj !=null && (msg.obj instanceof String))
-                        iProgress.onFailed((String) msg.obj);
-                }
-            }
-        };
-
-        FileRespondResult respondResult =  new FileRespondResult() {
-            @Override
-            public void onExecuting(long progress, long total, boolean done) {
-                Message message = new Message();
-                message.what = 1000;
-                message.arg1 = (int) progress;
-                message.arg2 = (int) total;
-                handler.sendMessageDelayed(message,HANDER_DELAYED_TIME);
-            }
-
-            @Override
-            public void onFailed(String reason) {
-                Message message = new Message();
-                message.what = 1001;
-                message.obj = reason;
-                handler.sendMessageDelayed(message,HANDER_DELAYED_TIME);
-            }
-        };
-
-        getBuilder(null)
+    /**
+     * 支持返回Uploadhelper 可以close
+     * @param uploadEnetity
+     * @param iProgress
+     * @return
+     */
+    public static UploadHelper UPLOAD(FileUploadEnetity uploadEnetity, final UploadIProgress iProgress) {
+        return getBuilder(null)
                 .addUploadFileFactory(UploadFileFactory.create())
                 .build()
-                .upLoadFiles(uploadEnetity,respondResult);
-
+                .upLoadFiles(uploadEnetity,iProgress);
     }
 
     /**

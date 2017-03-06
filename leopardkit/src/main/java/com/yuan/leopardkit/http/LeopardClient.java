@@ -18,19 +18,18 @@ import com.yuan.leopardkit.http.factory.RequestJsonFactory;
 import com.yuan.leopardkit.http.factory.UploadFileFactory;
 import com.yuan.leopardkit.interfaces.FileRespondResult;
 import com.yuan.leopardkit.interfaces.HttpRespondResult;
-import com.yuan.leopardkit.interfaces.IProgress;
+import com.yuan.leopardkit.interfaces.IDownloadProgress;
+import com.yuan.leopardkit.interfaces.UploadIProgress;
 import com.yuan.leopardkit.servers.BaseServerApi;
 import com.yuan.leopardkit.upload.FileUploadEnetity;
-import com.yuan.leopardkit.upload.UploadFileRequestBody;
+import com.yuan.leopardkit.upload.UploadHelper;
 import com.yuan.leopardkit.utils.JsonParseUtil;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
@@ -153,37 +152,17 @@ public class LeopardClient {
 //                .subscribe(new BaseSubscriber(mContext, callback));
 //    }
 
-    long curUploadProgress = 0;
 
-    public void upLoadFiles(final FileUploadEnetity enetity, final FileRespondResult callback) {
-        curUploadProgress = 0;
-        List<File> files = enetity.getFiles();
-        HashMap<String, RequestBody> params = new HashMap<>();
-        for (int i = 0; i < files.size(); i++) {
-            File file = files.get(i);
-            RequestBody body =
-                    RequestBody.create(dataMediaType, file);
+    public UploadHelper upLoadFiles(final FileUploadEnetity enetity, final UploadIProgress callback) {
+        UploadHelper  mUploadHelper = new UploadHelper(serverApi);
+        mUploadHelper.upload(enetity,callback);
 
-            UploadFileRequestBody body_up = new UploadFileRequestBody(body, new IProgress() {
-                @Override
-                public void onProgress(long progress, long total, boolean done) {
-                    if (done) {
-                        curUploadProgress += total;
-                    }
-                    callback.onExecuting(curUploadProgress + (progress), enetity.getFilesTotalSize(), curUploadProgress + (progress) == enetity.getFilesTotalSize());
-                }
+        return mUploadHelper;
+    }
 
-                @Override
-                public void onFailed(String reason) {
-                    callback.onFailed(reason);
-                }
-            });
-            params.put("file[]\"; filename=\"" + file.getName(), body_up);
-        }
-
-        serverApi.uploadFile(enetity.getUrl(), params)
-                .compose(schedulersTransformer)
-                .subscribe(new BaseSubscriber(mContext, callback));
+    public void downloadFile(final DownloadInfo downloadInfo, IDownloadProgress iDownloadProgress, DownLoadTask task){
+//        DownLoadHelper downLoadHelper = new DownLoadHelper(serverApi);
+//        downLoadHelper.download(downloadInfo,iDownloadProgress);
     }
 
     public void downLoadFile(final DownloadInfo downloadInfo, FileRespondResult callback, DownLoadTask task){

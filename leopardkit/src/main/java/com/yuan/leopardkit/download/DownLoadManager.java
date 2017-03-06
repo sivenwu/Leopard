@@ -1,21 +1,17 @@
 package com.yuan.leopardkit.download;
 
-import android.content.Context;
-import android.content.IntentFilter;
-import android.net.ConnectivityManager;
-import android.net.wifi.WifiManager;
 import android.os.Environment;
-import android.util.ArrayMap;
 import android.util.SparseArray;
 
 import com.yuan.leopardkit.db.HttpDbUtil;
 import com.yuan.leopardkit.download.model.DownloadInfo;
 import com.yuan.leopardkit.download.task.DownLoadTask;
+import com.yuan.leopardkit.download.utils.DownloadStateUtil;
 import com.yuan.leopardkit.interfaces.FileRespondResult;
+import com.yuan.leopardkit.interfaces.IDownloadProgress;
 
 import java.io.File;
 import java.io.InputStream;
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -26,6 +22,8 @@ import java.util.List;
  * Detail 下载辅助类,管理下载任务 与UI进行回馈
  */
 public class DownLoadManager {
+
+    private final String TAG = "DownLoadManager";
 
     private static DownLoadManager manager = new DownLoadManager();
 
@@ -75,22 +73,30 @@ public class DownLoadManager {
         task.writeCache(is);
     }
 
-    public boolean addTask(DownloadInfo downloadInfo, FileRespondResult listener){
+    public long addTask(DownloadInfo downloadInfo, IDownloadProgress listener){
+
+        // 如果添加过，就直接没必要再次添加了
+        if (downloadInfosList.contains(downloadInfo)) return 1;
 
         // 如果设置了限制 非有效则拒绝添加任务
-        if (!limitVaild()){ return false;}
+        if (!limitVaild()){ return -1;}
 
         if (downloadInfo.getFileSavePath() == null || downloadInfo.getFileSavePath().equals("")){
             downloadInfo.setFileSavePath(deFaultDir);
         }
-        DownLoadTask task = new DownLoadTask(downloadInfo,listener);
 //        downloadInfo.setDownLoadTask(task);
         downloadInfosList.add(downloadInfo);
         // TODO: 2016/8/31 添加一条记录
         long key =  HttpDbUtil.instance.insert(downloadInfo);
-        taskArray.put((int) key,task);
         downloadInfo.setKey(key);
-        return true;
+
+        DownLoadTask task = new DownLoadTask(downloadInfo,listener);
+        taskArray.put((int) key,task);
+        return key;
+    }
+
+    private void checkAddTask(){
+
     }
 
     public void removeTask(DownloadInfo downloadInfo){
@@ -127,8 +133,16 @@ public class DownLoadManager {
     }
 
     public void startAllTask(){
+//        Log.i(TAG, "startAllTask now n the number of downloadList is " + downloadInfosList.size() + "");
         for (DownloadInfo downloadInfo : downloadInfosList){
-            startTask(downloadInfo);
+            // 暂停状态是恢复下载
+            if (DownloadStateUtil.isPause(downloadInfo)){
+//                Log.i(TAG, "startAllTask: " +"startTask , the id is "+downloadInfo.getKey());
+                startTask(downloadInfo);
+            }else{
+                restartTask(downloadInfo);
+//                Log.i(TAG, "startAllTask: " +"restartTask, the id is "+downloadInfo.getKey());
+            }
         }
     }
 
@@ -139,8 +153,10 @@ public class DownLoadManager {
     }
 
     public void resumeTask(DownloadInfo downloadInfo){
-        DownLoadTask task = (DownLoadTask) taskArray.get((int) downloadInfo.getKey());
-        task.download(false);
+        if (!DownloadStateUtil.isFinsh(downloadInfo)) {
+            DownLoadTask task = (DownLoadTask) taskArray.get((int) downloadInfo.getKey());
+            task.download(false);
+        }
     }
 
     public void resumeAllTask(){
@@ -155,8 +171,10 @@ public class DownLoadManager {
     }
 
     public void startTask(DownloadInfo downloadInfo){
-        DownLoadTask task = (DownLoadTask) taskArray.get((int) downloadInfo.getKey());
-        task.download(false);
+        if (!DownloadStateUtil.isFinsh(downloadInfo)) {
+            DownLoadTask task = (DownLoadTask) taskArray.get((int) downloadInfo.getKey());
+            task.download(false);
+        }
     }
 
     public void stopTask(DownloadInfo downloadInfo){
@@ -165,8 +183,20 @@ public class DownLoadManager {
     }
 
     public void pauseTask(DownloadInfo downloadInfo) {
-        DownLoadTask task = (DownLoadTask) taskArray.get((int) downloadInfo.getKey());
-        task.pause();
+        if (!DownloadStateUtil.isFinsh(downloadInfo)) {
+            DownLoadTask task = (DownLoadTask) taskArray.get((int) downloadInfo.getKey());
+            task.pause();
+        }
+    }
+
+    /**
+     * 由于会持有定时器资源，防止内存泄露的几点建议
+     * 1、下载进程最好存在后台，回调在前台
+     * 2、下载引用准备销毁时，建议调用 DownLoadManager.getManager().release() 方法，释放定时器资源
+     * 3、后期优化..
+     */
+    public void release(){
+        pauseAllTask();
     }
 
 }

@@ -9,12 +9,11 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ProgressBar;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.yuan.leopardkit.LeopardHttp;
 import com.yuan.leopardkit.download.DownLoadManager;
 import com.yuan.leopardkit.download.model.DownloadInfo;
-import com.yuan.leopardkit.interfaces.IProgress;
+import com.yuan.leopardkit.interfaces.IDownloadProgress;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -32,68 +31,66 @@ public class DownLoadApater extends RecyclerView.Adapter<DownLoadApater.MyViewHo
     List<DownLoadModel> data = new ArrayList<>();
     Context context;
 
+    int count = 0;
+
     public DownLoadApater(List<DownLoadModel> data, Context context) {
         this.data = data;
         this.context = context;
     }
 
+
     @Override
     public MyViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        return new MyViewHolder(LayoutInflater.from(context).inflate(R.layout.layout_download, null));
+        MyViewHolder viewholder = new MyViewHolder(LayoutInflater.from(context).inflate(R.layout.layout_download, null),count);
+        return viewholder;
     }
+
 
     @Override
     public void onBindViewHolder(final MyViewHolder holder, final int position) {
 
-        final DownloadInfo info = data.get(position).getInfo();
+        Log.i("onBindViewHolder", "onBindViewHolder: " + position +" "+ holder.getLayoutPosition() + " - " +holder.getAdapterPosition());
 
-        holder.progressBar.setMax((int) info.getFileLength());
-        holder.progressBar.setProgress((int) info.getProgress());
-        holder.progressShow.setText((int) ((float) info.getProgress() / info.getFileLength() * 100) + "%");
+        final DownloadInfo info = data.get(position).getInfo();
+        final DownLoadModel downLoadModel = data.get(position);
 
         //按钮更新
         if (info.getState() == DownLoadManager.STATE_FINISH) {
             holder.downBtn.setText("重新開始");
-            holder.prgressTv.setText(Double.toString(getRealNum(info.getProgress()/1024/1024)) + "MB/"
-                    + Double.toString(getRealNum( info.getFileLength()/1024/1024)) + "MB"+" 下载完成");
-        }
-
-        if (info.getState() == DownLoadManager.STATE_WAITING) {
+        } else if (info.getState() == DownLoadManager.STATE_WAITING) {// 默认状态
+            holder.downBtn.setText("下载");
+        }else if (info.getState() == DownLoadManager.STATE_PAUSE) {
+            holder.downBtn.setText("继续");
+        }else if (info.getState() == DownLoadManager.STATE_DOWNLOADING) {
+            holder.downBtn.setText("暂停");
+        }else{
             holder.downBtn.setText("下载");
         }
 
-        if (info.getState() == DownLoadManager.STATE_PAUSE) {
-            holder.downBtn.setText("继续");
+        // 默认状态更新
+        if (info.getState() == DownLoadManager.STATE_FINISH || info.getState() == DownLoadManager.STATE_PAUSE){
+            holder.progressBar.setMax((int) info.getFileLength());
+            holder.progressBar.setProgress((int) info.getProgress());
+            holder.progressShow.setText((int) ((float) info.getProgress() /  info.getFileLength() * 100) + "%");
+            holder.prgressTv.setText(Double.toString(getRealNum(info.getProgress()/1024f/1024f)) + "MB/"
+                    + Double.toString(getRealNum( info.getFileLength()/1024f/1024f)) + "MB"+" 下载完成");
+        }else{
+
         }
 
-        if (info.getState() == DownLoadManager.STATE_DOWNLOADING) {
-            holder.downBtn.setText("暂停");
-        }
-
-        //add task
-        boolean result = LeopardHttp.DWONLOAD(info, new IProgress() {
+        long result =  LeopardHttp.DWONLOAD(info, new IDownloadProgress() {
             @Override
-            public void onProgress(long progress, long total, boolean done) {
+            public void onProgress(long key,long progress, long total, boolean done) {
 
-                //按钮更新
-
-                if (info.getState() == DownLoadManager.STATE_WAITING) {
-                    holder.downBtn.setText("下载");
-                }
-
-                if (info.getState() == DownLoadManager.STATE_PAUSE) {
-                    holder.downBtn.setText("继续");
-                }
-
-                if (info.getState() == DownLoadManager.STATE_DOWNLOADING) {
-                    holder.downBtn.setText("暂停");
-                }
+//                Log.i("yuan onProgress", " progress : " + progress + "now total :" + total);
 
                 holder.progressBar.setMax((int) total);
                 holder.progressBar.setProgress((int) progress);
                 holder.progressShow.setText((int) ((float) progress / total * 100) + "%");
+
                 double curP = 0;
                 double curTotal = 0;
+
                 if (progress / 1024L < 1024L) {
                     curP = (double) progress / 1024;
                     curTotal = (double) total / 1024L / 1024L;
@@ -105,21 +102,23 @@ public class DownLoadApater extends RecyclerView.Adapter<DownLoadApater.MyViewHo
                     holder.prgressTv.setText(Double.toString(getRealNum(curP)) + "MB/" + Double.toString(getRealNum(curTotal)) + "MB"
                     );
                 }
-                if (done) {
+
+                if (progress >= total && total != 0) {
                     holder.downBtn.setText("重新開始");
                     holder.prgressTv.setText(holder.prgressTv.getText() + " 下載完成！");
                 }
             }
 
             @Override
-            public void onFailed(String reason) {
-                Toast.makeText(context,reason,Toast.LENGTH_LONG).show();
-                notifyDataSetChanged();
+            public void onSucess(String result) {
+                // nothing..
+            }
+
+            @Override
+            public void onFailed(Throwable e, String reason) {
+                // nothing..
             }
         });
-
-        Log.i("leopard","下载任务是否添加成功: " +result +"");
-
 
         holder.downBtn.setOnClickListener(new View.OnClickListener() {
 
@@ -150,6 +149,8 @@ public class DownLoadApater extends RecyclerView.Adapter<DownLoadApater.MyViewHo
                 }
             }
         });
+
+
     }
 
     @Override
@@ -165,13 +166,15 @@ public class DownLoadApater extends RecyclerView.Adapter<DownLoadApater.MyViewHo
 
     class MyViewHolder extends RecyclerView.ViewHolder {
 
+        public int position;
         public Button downBtn;
         public ProgressBar progressBar;
         public TextView prgressTv;
         public TextView progressShow;
 
-        public MyViewHolder(View itemView) {
+        public MyViewHolder(View itemView,int position) {
             super(itemView);
+            this.position = position;
             downBtn = (Button) itemView.findViewById(R.id.down_btn);
             progressBar = (ProgressBar) itemView.findViewById(R.id.down_pb);
             prgressTv = (TextView) itemView.findViewById(R.id.down_txt_pb);

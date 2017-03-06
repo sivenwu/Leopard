@@ -3,9 +3,7 @@ package com.yuan.leopardkit.download.task;
 import com.yuan.leopardkit.db.HttpDbUtil;
 import com.yuan.leopardkit.download.DownLoadManager;
 import com.yuan.leopardkit.download.model.DownloadInfo;
-import com.yuan.leopardkit.http.LeopardClient;
-import com.yuan.leopardkit.http.factory.DownLoadFileFactory;
-import com.yuan.leopardkit.interfaces.FileRespondResult;
+import com.yuan.leopardkit.interfaces.IDownloadProgress;
 
 import java.io.File;
 import java.io.IOException;
@@ -14,11 +12,10 @@ import java.io.RandomAccessFile;
 import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
 
-import retrofit2.adapter.rxjava.RxJavaCallAdapterFactory;
-
 /**
  * Created by Yuan on 2016/8/30.
  * Detail 单一职责 负责下载任务（基本下载操作、数据库更新、缓存处理）
+ *        1.4 版本之后 职责只负责状态变化，缓存处理。下载职责给downhelper
  */
 public class DownLoadTask {
 
@@ -31,12 +28,18 @@ public class DownLoadTask {
     private boolean isStart = true;//是否第一次开始
 
     private DownloadInfo downloadInfo;
-    private FileRespondResult fileRespondResult;
+//    private FileRespondResult fileRespondResult;
 
-    public DownLoadTask(DownloadInfo downloadInfo, FileRespondResult fileRespondResult) {
+    // 1.4 downloadhelper
+    private DownLoadHelper downLoadHelper;
+    private IDownloadProgress iDownloadProgress;
+
+    public DownLoadTask(DownloadInfo downloadInfo, IDownloadProgress iDownloadProgress) {
         this.downloadInfo = downloadInfo;
+        this.iDownloadProgress = iDownloadProgress;
+        this.downLoadHelper = new DownLoadHelper(this.downloadInfo,this.iDownloadProgress);
+
         taskState = this.downloadInfo.getState();
-        this.fileRespondResult = fileRespondResult;
     }
 
     /**
@@ -44,32 +47,35 @@ public class DownLoadTask {
      */
     public void stop() {
         this.downloadInfo.setState(DownLoadManager.STATE_WAITING);
-        if (this.downloadInfo!=null &&this.downloadInfo.getSubscriber() != null)
-            this.downloadInfo.getSubscriber().unsubscribe();
-        fileRespondResult.onExecuting(0L,downloadInfo.getFileLength(),false);
-        if (this.downloadInfo.getState() != DownLoadManager.STATE_FINISH){
-            resetProgress();
-            File file = new File(downloadInfo.getFileSavePath() + downloadInfo.getFileName()+fileCacheNem);
-            if (file.exists()) file.delete();
-        }
-//        if (this.downloadInfo.getState() == DownLoadManager.STATE_FINISH){
+
+        // 委托停止
+        downLoadHelper.stop();
+//
+//        //
+//        if (!isFinish()){
 //            resetProgress();
-//            File file = new File(downloadInfo.getFileSavePath() + downloadInfo.getFileName());
-//            if (file.exists()) file.delete()
+//            File file = new File(downloadInfo.getFileSavePath() + downloadInfo.getFileName()+fileCacheNem);
+//            if (file.exists()) file.delete();
 //        }
     }
 
     public void remove(){
         stop();
+
+        File file = new File(downloadInfo.getFileSavePath() + downloadInfo.getFileName()+fileCacheNem);
+        if (file.exists()) file.delete();
+
         HttpDbUtil.instance.delete(this.downloadInfo);
     }
 
     public void pause() {
         downloadInfo.setState(DownLoadManager.STATE_PAUSE);
         downloadInfo.setBreakProgress(downloadInfo.getProgress());//记录断点位置;
-        if (this.downloadInfo!=null &&this.downloadInfo.getSubscriber() != null)
-            this.downloadInfo.getSubscriber().unsubscribe();
-        //// TODO: 2016/8/31 更新数据库
+
+        // 委托暂停
+        downLoadHelper.pause();
+
+        // TODO: 2016/8/31 更新数据库
         HttpDbUtil.instance.updateState(downloadInfo);
     }
 
@@ -86,7 +92,11 @@ public class DownLoadTask {
         if (downloadInfo.getState() == DownLoadManager.STATE_DOWNLOADING)return;
 
         if (downloadInfo.getState() == DownLoadManager.STATE_FINISH && !isRestart) return;
+
+        // 更新start状态
         isStart = isRestart;
+        downLoadHelper.setStart(isRestart);
+
         if (isRestart) {
             if (downloadInfo.getState() == DownLoadManager.STATE_FINISH )
                 stop();
@@ -94,17 +104,12 @@ public class DownLoadTask {
             startPoints = 0L;
         }
         downloadInfo.setState(DownLoadManager.STATE_DOWNLOADING);
-        getClient().downLoadFile(this.downloadInfo, this.fileRespondResult, this);
+
+        // 开启委托下载
+        downLoadHelper.start(downloadInfo,iDownloadProgress);
     }
 
-
-    private LeopardClient getClient() {
-        return new LeopardClient.Builder()
-                .addRxJavaCallAdapterFactory(RxJavaCallAdapterFactory.create())
-                .addDownLoadFileFactory(DownLoadFileFactory.create(this.fileRespondResult, this.downloadInfo))
-                .build();
-    }
-
+    // ---------------------------------------------------------------------------------------------
     public void writeCache(InputStream inputStream){
 
         File fileDir = new File(downloadInfo.getFileSavePath());
@@ -161,13 +166,17 @@ public class DownLoadTask {
         //更新文件
         File file = new File(downloadInfo.getFileSavePath() + downloadInfo.getFileName() +fileCacheNem);
         file.renameTo(new File(downloadInfo.getFileSavePath() + downloadInfo.getFileName()));
-        fileRespondResult.onSuccess("");
     }
 
     private void resetProgress(){
         this.downloadInfo.setBreakProgress(0L);
         this.downloadInfo.setProgress(0L);
         this.downloadInfo.setFileLength(0L);
+    }
+
+    // ---- 状态判断入口
+    private boolean isFinish(){
+        return this.downloadInfo.getState() == DownLoadManager.STATE_FINISH;
     }
 
 }

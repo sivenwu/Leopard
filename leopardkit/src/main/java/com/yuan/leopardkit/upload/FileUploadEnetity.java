@@ -51,4 +51,8 @@ public class FileUploadEnetity {
     public long getFilesTotalSize() {
          return size;
     }
+
+    public int getFileNum(){
+        return files.size();
+    }
 }

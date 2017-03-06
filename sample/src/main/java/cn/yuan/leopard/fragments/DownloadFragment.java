@@ -44,6 +44,13 @@ public class DownloadFragment extends Fragment implements View.OnClickListener {
         return view;
     }
 
+    @Override
+    public void onDestroy() {
+        // 引用对象销毁时，释放下载资源（当然建议在后台服务跑下载进程）
+        DownLoadManager.getManager().release();
+        super.onDestroy();
+    }
+
     private void initView(View view) {
 
         pathShowTv = (TextView) view.findViewById(R.id.down_path_tv);
@@ -80,17 +87,22 @@ public class DownloadFragment extends Fragment implements View.OnClickListener {
         }
 
         if (data.size() <=0) {
-        for (int i = 0; i < 3; i++) {
-            String url = "http://f1.market.xiaomi.com/download/AppStore/03f82a470d7ac44300d8700880584fe856387aac6/cn.wsy.travel.apk";
-            DownloadInfo info = new DownloadInfo();
-            info.setUrl(url);
-            info.setFileSavePath(Environment.getExternalStorageDirectory() + "/AAADwonload/");// 自定义下载路径
-            info.setFileName("IRecord_" + i + ".apk");
-            DownLoadModel model = new DownLoadModel();
-            model.setInfo(info);
-            data.add(model);
+            for (int i = 0; i < 3; i++) {
+                String url = "http://f1.market.xiaomi.com/download/AppStore/03f82a470d7ac44300d8700880584fe856387aac6/cn.wsy.travel.apk";
+                DownloadInfo info = new DownloadInfo();
+                info.setUrl(url);
+                info.setFileSavePath(Environment.getExternalStorageDirectory() + "/AAADwonload/");// 自定义下载路径
+                info.setFileName("IRecord_" + i + ".apk");
+                DownLoadModel model = new DownLoadModel();
+                model.setInfo(info);
+                data.add(model);
+            }
         }
-        }
+//        addDwonloadInfoTask();
+        refreshDwonloadInfoTask();
+    }
+
+    private void refreshDwonloadInfoTask(){
         adapter.notifyDataSetChanged();
     }
 
@@ -100,20 +112,23 @@ public class DownloadFragment extends Fragment implements View.OnClickListener {
         switch (v.getId()) {
             case R.id.down_start_all_btn:
                 DownLoadManager.getManager().startAllTask();
+                refreshDwonloadInfoTask();
                 break;
 
             case R.id.down_delete_all_btn:
                 DownLoadManager.getManager().removeAllTask();
                 data.clear();
-                adapter.notifyDataSetChanged();
+                refreshDwonloadInfoTask();
                 break;
 
             case R.id.down_pause_all_btn:
                 DownLoadManager.getManager().pauseAllTask();
+                refreshDwonloadInfoTask();
                 break;
 
             case R.id.down_stop_all_btn:
                 DownLoadManager.getManager().stopAllTask();
+                refreshDwonloadInfoTask();
                 break;
         }
     }

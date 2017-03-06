@@ -7,7 +7,9 @@ import android.util.Log;
 import com.yuan.leopardkit.db.dao.DaoMaster;
 import com.yuan.leopardkit.db.dao.DaoSession;
 import com.yuan.leopardkit.db.dao.FileModelDao;
+import com.yuan.leopardkit.download.DownLoadManager;
 import com.yuan.leopardkit.download.model.DownloadInfo;
+import com.yuan.leopardkit.download.utils.DownloadStateUtil;
 import com.yuan.leopardkit.models.FileLoadInfo;
 
 import java.util.ArrayList;
@@ -67,13 +69,27 @@ public class HttpDbUtil {
             DownloadInfo info = new DownloadInfo();
             info.setUrl(model.getUrl());
             info.setKey(model.getKey());
-            info.setState(model.getState());
             info.setFileLength(model.getFileLength());
             info.setFileSavePath(model.getFileSavePath());
             info.setType(model.getType());
             info.setProgress(model.getProgress());
             info.setBreakProgress(model.getProgress());
             info.setFileName(model.getFileName());
+
+            //除了暂停、完成，其他初始化状态都是默认等待
+            if (DownloadStateUtil.isFinsh(info) || DownloadStateUtil.isPause(info)){
+                info.setState(model.getState());
+            }else if (info.getProgress() > 0){ // 这里是防止被强制关闭，这里设置当前作为断点，并且状态是暂停
+                info.setBreakProgress(info.getProgress());
+                info.setState(DownLoadManager.STATE_PAUSE);
+            }else{
+                info.setState(DownLoadManager.STATE_WAITING);
+            }
+
+            if (info.getProgress() >= info.getFileLength()){
+                info.setState(DownLoadManager.STATE_FINISH);
+            }
+
             downloadInfoList.add(info);
         }
         return downloadInfoList;
