@@ -23,7 +23,6 @@ import cn.yuan.leopard.R;
 import cn.yuan.leopard.adapters.DownLoadApater;
 import cn.yuan.leopard.model.DownLoadModel;
 
-
 public class DownloadFragment extends Fragment implements View.OnClickListener {
 
     private RecyclerView recyclerView;
