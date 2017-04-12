@@ -368,16 +368,28 @@ public class RequestPostModel extends BaseEnetity{
      * 上传入口
      *
      * @param FileUploadEnetity 上传封装实体类
-     * @param IProgress 上传进度回调接口
+     * @param UploadIProgress 上传进度回调接口
      */
-    LeopardHttp.UPLOAD(new FileUploadEnetity("upload.php",fileList), new IProgress() {
+     LeopardHttp.UPLOAD(new FileUploadEnetity("http://wxwusy.applinzi.com/leopardWeb/app/sample/upload.php",fileList), new UploadIProgress() {
+
                     @Override
-                    public void onProgress(long progress, long total, boolean done) {
-                         // progress 返回当前上传的进度 ，total 返回当前上传的总文件大小
+                    public void onProgress(long progress, long total, int index, boolean done) {
+                        Log.i("yuan","upload state: "+progress + " - "+total);
                         if (done){
                             progressDialog.dismiss();
                             Toast.makeText(getActivity(),"所有图片上传成功！！",Toast.LENGTH_SHORT).show();
                         }
+                    }
+
+                    @Override
+                    public void onSucess(String result) {
+                        Toast.makeText(getActivity(),result,Toast.LENGTH_SHORT).show();
+                    }
+
+                    @Override
+                    public void onFailed(Throwable e, String reason) {
+                        Toast.makeText(getActivity(),reason,Toast.LENGTH_SHORT).show();
+
                     }
                 });
 ``````
