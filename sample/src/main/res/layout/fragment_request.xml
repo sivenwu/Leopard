@@ -9,10 +9,20 @@
         android:layout_height="match_parent"
         android:orientation="vertical">
 
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="基本请求:"
+            android:padding="5dp"
+            android:layout_marginLeft="5dp"
+            />
+
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
+            android:layout_marginTop="-10dp"
+
             android:weightSum="3">
 
             <TextView
@@ -93,6 +103,55 @@
         </LinearLayout>
 
         <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="回调对象类型举例:"
+            android:padding="5dp"
+            android:layout_marginLeft="5dp"
+            />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginTop="-10dp"
+            android:weightSum="2">
+
+            <TextView
+                android:id="@+id/get_obj_tv"
+                android:layout_width="0dp"
+                android:layout_height="70dp"
+                android:layout_margin="10dp"
+                android:layout_weight="1"
+                android:gravity="center"
+                android:textColor="#ffffff"
+                android:background="@color/colorAccent"
+                android:text="GET 回调举例" />
+
+            <TextView
+                android:id="@+id/post_obj_tv"
+                android:layout_width="0dp"
+                android:layout_height="70dp"
+                android:layout_marginBottom="10dp"
+                android:layout_marginRight="10dp"
+                android:layout_marginTop="10dp"
+                android:layout_weight="1"
+                android:gravity="center"
+                android:textColor="#ffffff"
+                android:background="@color/colorAccent"
+                android:text="POST 回调举例"/>
+        </LinearLayout>
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="缓存使用举例:"
+            android:padding="5dp"
+            android:layout_marginLeft="5dp"
+            android:layout_marginBottom="-10dp"
+            />
+
+        <TextView
             android:id="@+id/cache_tv"
             android:layout_width="match_parent"
             android:layout_height="70dp"
@@ -101,6 +160,14 @@
             android:textColor="#ffffff"
             android:background="@color/colorAccent"
             android:text="缓存测试入口" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="响应信息:"
+            android:padding="5dp"
+            android:layout_marginLeft="5dp"
+            />
 
         <LinearLayout
             android:layout_width="match_parent"

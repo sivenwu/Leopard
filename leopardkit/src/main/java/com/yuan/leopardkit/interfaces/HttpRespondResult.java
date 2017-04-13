@@ -2,6 +2,8 @@ package com.yuan.leopardkit.interfaces;
 
 import android.content.Context;
 
+import com.yuan.leopardkit.http.base.Task;
+
 import cn.yuan.leopardkit.R;
 import okhttp3.Request;
 import okhttp3.Response;
@@ -22,8 +24,8 @@ public abstract class HttpRespondResult implements IHttpLoading {
     private Response response;
     private Request request;
 
-    public HttpRespondResult() {
 
+    public HttpRespondResult() {
     }
 
     public HttpRespondResult(Context mContext) {

@@ -13,6 +13,8 @@ import android.widget.Toast;
 
 import com.yuan.leopardkit.LeopardHttp;
 import com.yuan.leopardkit.http.base.HttpMethod;
+import com.yuan.leopardkit.http.base.Task;
+import com.yuan.leopardkit.interfaces.HttpRespondObjectResult;
 import com.yuan.leopardkit.interfaces.HttpRespondResult;
 import com.yuan.leopardkit.interfaces.ILoading;
 
@@ -25,6 +27,7 @@ import cn.yuan.leopard.model.RequestGetJsonModel;
 import cn.yuan.leopard.model.RequestGetModel;
 import cn.yuan.leopard.model.RequestPostJsonModel;
 import cn.yuan.leopard.model.RequestPostModel;
+import cn.yuan.leopard.model.TestResponseModel;
 import okhttp3.Headers;
 import okhttp3.internal.framed.Header;
 
@@ -36,6 +39,8 @@ public class RquestFragment extends Fragment implements View.OnClickListener{
     private TextView requestTv,requestHeader,resonseData,responseHeader;
     private TextView cacheTv;
 
+    private TextView getObjTv;
+    private TextView postObjTv;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -62,6 +67,9 @@ public class RquestFragment extends Fragment implements View.OnClickListener{
 
         cacheTv = (TextView) view.findViewById(R.id.cache_tv);
 
+        getObjTv = (TextView) view.findViewById(R.id.get_obj_tv);
+        postObjTv = (TextView) view.findViewById(R.id.post_obj_tv);
+
     }
 
     private void initListener(){
@@ -72,6 +80,8 @@ public class RquestFragment extends Fragment implements View.OnClickListener{
         getJsonTv.setOnClickListener(this);
         getHeaderTv.setOnClickListener(this);
         cacheTv.setOnClickListener(this);
+        getObjTv.setOnClickListener(this);
+        postObjTv.setOnClickListener(this);
     }
 
 
@@ -100,6 +110,12 @@ public class RquestFragment extends Fragment implements View.OnClickListener{
                 break;
             case R.id.cache_tv:
                 startActivity(new Intent(getActivity(),CacheActivity.class));
+                break;
+            case R.id.get_obj_tv:
+                getObj();
+                break;
+            case R.id.post_obj_tv:
+                postObj();
                 break;
         }
     }
@@ -253,6 +269,68 @@ public class RquestFragment extends Fragment implements View.OnClickListener{
             @Override
             public void onSuccess(String content) {
                 resonseData.setText("onSuccess \n"+content);
+
+                Headers rspHeaders = getResponse().headers();
+                for (int i = 0;i< rspHeaders.size(); i++) {
+                    responseHeader.setText( responseHeader.getText().toString() + rspHeaders.name(i)
+                            +" : "+rspHeaders.value(i) +"\n");
+                }
+
+                Headers rqHeaders = getRequest().headers();
+                requestTv.setText(getRequest().toString());
+                for (int i = 0;i< rqHeaders.size(); i++) {
+                    requestHeader.setText( responseHeader.getText().toString() + rqHeaders.name(i)
+                            +" : "+rqHeaders.value(i) +"\n");
+                }
+            }
+
+            @Override
+            public void onFailure(Throwable error, String content) {
+                resonseData.setText("onFailure \n"+content);
+            }
+        });
+    }
+
+    public void getObj(){
+        LeopardHttp.SEND(HttpMethod.GET,getActivity(),new RequestGetModel("leopard", "123"), new HttpRespondObjectResult<TestResponseModel>() {
+
+            @Override
+            public void onSuccess(Task<TestResponseModel> task) {
+
+                TestResponseModel model = task.getResult();
+
+                resonseData.setText("onSuccess \n"
+                        +model.getAuthor() + " " + model.getInfo());
+
+                Headers rspHeaders = getResponse().headers();
+                for (int i = 0;i< rspHeaders.size(); i++) {
+                    responseHeader.setText( responseHeader.getText().toString() + rspHeaders.name(i)
+                            +" : "+rspHeaders.value(i) +"\n");
+                }
+
+                Headers rqHeaders = getRequest().headers();
+                requestTv.setText(getRequest().toString());
+                for (int i = 0;i< rqHeaders.size(); i++) {
+                    requestHeader.setText( responseHeader.getText().toString() + rqHeaders.name(i)
+                            +" : "+rqHeaders.value(i) +"\n");
+                }
+            }
+
+            @Override
+            public void onFailure(Throwable error, String content) {
+                resonseData.setText("onFailure \n"+content);
+            }
+        });
+    }
+
+    public void postObj(){
+        LeopardHttp.SEND(HttpMethod.POST,getActivity(),new RequestPostModel("leopard", "888888"), new HttpRespondObjectResult<TestResponseModel>() {
+            @Override
+            public void onSuccess(Task<TestResponseModel> task) {
+                TestResponseModel model = task.getResult();
+
+                resonseData.setText("onSuccess \n"
+                        +model.getAuthor() + " " + model.getInfo());
 
                 Headers rspHeaders = getResponse().headers();
                 for (int i = 0;i< rspHeaders.size(); i++) {

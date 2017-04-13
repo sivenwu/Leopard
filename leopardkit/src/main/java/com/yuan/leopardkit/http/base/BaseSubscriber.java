@@ -2,6 +2,8 @@ package com.yuan.leopardkit.http.base;
 
 import android.content.Context;
 
+import com.google.gson.Gson;
+import com.yuan.leopardkit.interfaces.HttpRespondObjectResult;
 import com.yuan.leopardkit.interfaces.HttpRespondResult;
 
 import java.io.IOException;
@@ -47,6 +49,12 @@ public class BaseSubscriber<T extends ResponseBody> extends Subscriber<T> {
         try {
             String jsonString = new String(t.bytes());
             callback.onSuccess(jsonString);
+
+            if (callback instanceof HttpRespondObjectResult){
+                HttpRespondObjectResult cb = (HttpRespondObjectResult) callback;
+                cb.addTask(jsonString);
+            }
+
         } catch (IOException e) {
             e.printStackTrace();
             callback.onAfterViewAction();

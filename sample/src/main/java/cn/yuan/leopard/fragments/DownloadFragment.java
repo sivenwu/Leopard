@@ -78,7 +78,7 @@ public class DownloadFragment extends Fragment implements View.OnClickListener {
 
     private void initData() {
 
-        List<DownloadInfo> downloadInfoList =   HttpDbUtil.instance.queryFileInfo(0);
+        List<DownloadInfo> downloadInfoList =   DownLoadManager.getManager().getDownloadList(getActivity());
 
         for (DownloadInfo info:downloadInfoList){
             DownLoadModel model = new DownLoadModel();

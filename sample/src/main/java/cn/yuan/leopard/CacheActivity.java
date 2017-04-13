@@ -6,8 +6,10 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.yuan.leopardkit.http.LeopardClient;
+import com.yuan.leopardkit.http.base.Task;
 import com.yuan.leopardkit.http.factory.CacheFactory;
 import com.yuan.leopardkit.http.factory.RequestJsonFactory;
+import com.yuan.leopardkit.interfaces.HttpRespondObjectResult;
 import com.yuan.leopardkit.interfaces.HttpRespondResult;
 import com.yuan.leopardkit.ui.activitys.LeopardActivity;
 import com.yuan.leopardkit.utils.NetWorkUtil;
@@ -17,6 +19,7 @@ import java.util.HashMap;
 import cn.yuan.leopard.model.RequestGetModel;
 import cn.yuan.leopard.model.RequestPostJsonModel;
 import cn.yuan.leopard.model.RequestPostModel;
+import cn.yuan.leopard.model.TestResponseModel;
 import okhttp3.Headers;
 import retrofit2.adapter.rxjava.RxJavaCallAdapterFactory;
 import retrofit2.converter.gson.GsonConverterFactory;
@@ -40,12 +43,12 @@ public class CacheActivity extends LeopardActivity implements View.OnClickListen
 
     private LeopardClient.Builder getClient(){
 
-        LeopardClient.Builder builder = new LeopardClient.Builder()
+        LeopardClient.Builder builder = new LeopardClient.Builder(this,url)
                 .addGsonConverterFactory(GsonConverterFactory.create())
                 .addRxJavaCallAdapterFactory(RxJavaCallAdapterFactory.create())
                 .addCacheFactory(CacheFactory.create(this))//只使用离线缓存
 //                .addCacheFactory(CacheFactory.create(this,true))//使用在线缓存
-                .baseUrl(url);
+                ;
         return builder;
     }
 
@@ -103,7 +106,7 @@ public class CacheActivity extends LeopardActivity implements View.OnClickListen
 
 
     public void post(){
-        getClient().build().POST(this, new RequestPostModel("leopard", "QQ 450302004"), new HttpRespondResult() {
+        getClient().build().POST(new RequestPostModel("leopard", "QQ 450302004"), new HttpRespondResult() {
             @Override
             public void onSuccess(String content) {
                 if (NetWorkUtil.isNetworkAvailable(CacheActivity.this)) {
@@ -134,8 +137,9 @@ public class CacheActivity extends LeopardActivity implements View.OnClickListen
     }
 
     public void postjson(){
+
         getClient().addRequestJsonFactory(RequestJsonFactory.create()).build()
-                .POST(this, new RequestPostJsonModel("leopard", "QQ 450302004"), new HttpRespondResult() {
+                .POST(new RequestPostJsonModel("leopard", "QQ 450302004"), new HttpRespondResult() {
                     @Override
                     public void onSuccess(String content) {
                         if (NetWorkUtil.isNetworkAvailable(CacheActivity.this)) {
@@ -166,7 +170,7 @@ public class CacheActivity extends LeopardActivity implements View.OnClickListen
     }
 
     public void get(){
-        getClient().build().GET(this, new RequestGetModel("leopard", "QQ 450302004"), new HttpRespondResult() {
+        getClient().build().GET(new RequestGetModel("leopard", "QQ 450302004"), new HttpRespondResult() {
             @Override
             public void onSuccess(String content) {
                 if (NetWorkUtil.isNetworkAvailable(CacheActivity.this)) {
@@ -208,7 +212,7 @@ public class CacheActivity extends LeopardActivity implements View.OnClickListen
 
         getClient().addHeader(headers)
                 .build()
-                .POST(this, new RequestPostModel("leopard", "QQ 450302004"), new HttpRespondResult() {
+                .POST(new RequestPostModel("leopard", "QQ 450302004"), new HttpRespondResult() {
                     @Override
                     public void onSuccess(String content) {
                         if (NetWorkUtil.isNetworkAvailable(CacheActivity.this)) {
@@ -246,7 +250,7 @@ public class CacheActivity extends LeopardActivity implements View.OnClickListen
 
         getClient().addHeader(headers)
                 .build()
-                .GET(this,new RequestPostModel("leopard", "QQ 450302004"), new HttpRespondResult() {
+                .GET(new RequestPostModel("leopard", "QQ 450302004"), new HttpRespondResult() {
                     @Override
                     public void onSuccess(String content) {
                         if (NetWorkUtil.isNetworkAvailable(CacheActivity.this)) {

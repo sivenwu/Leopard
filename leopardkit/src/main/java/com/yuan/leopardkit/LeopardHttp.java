@@ -40,14 +40,6 @@ public class LeopardHttp {
     private static boolean useCache = false;
 
     /**
-     * leopard初始化
-     */
-    public static void init(Context context) {
-        HttpDbUtil.initHttpDB(context.getApplicationContext());
-//        registerNetWorkListener(context);
-    }
-
-    /**
      * 绑定主机域名
      * @param server 服务器域名
      * @param port 服务器端口
@@ -61,7 +53,10 @@ public class LeopardHttp {
      * @param server 服务器域名
      */
     public static void bindServer(String server){
-        ADDRESS = server;
+        if (!server.endsWith("/")){
+            server = server + "/";
+        }
+        bindServer(server,80);
     }
 
     /**
@@ -73,10 +68,7 @@ public class LeopardHttp {
     }
 
     private static LeopardClient.Builder getBuilder(Context mC) {
-        LeopardClient.Builder builder =  new LeopardClient.Builder()
-                .addGsonConverterFactory(GsonConverterFactory.create())
-                .addRxJavaCallAdapterFactory(RxJavaCallAdapterFactory.create())
-                .baseUrl(ADDRESS);
+        LeopardClient.Builder builder =  new LeopardClient.Builder(mC,ADDRESS);
 
         if (useCache && mC != null){
             builder.addCacheFactory(CacheFactory.create(mC));
@@ -179,21 +171,21 @@ public class LeopardHttp {
     private static void POST(Context context, BaseEnetity enetity, HttpRespondResult httpRespondResult) {
         getBuilder(context)
                 .build()
-                .POST(context, enetity, httpRespondResult);
+                .POST(enetity, httpRespondResult);
     }
 
     private static void POST(Context context, BaseEnetity enetity, HashMap<String, String> header, HttpRespondResult httpRespondResult) {
         getBuilder(context)
                 .addHeader(header)
                 .build()
-                .POST(context, enetity, httpRespondResult);
+                .POST(enetity, httpRespondResult);
     }
 
     private static void POSTJson(Context context, BaseEnetity enetity, HttpRespondResult httpRespondResult) {
         getBuilder(context)
                 .addRequestJsonFactory(RequestJsonFactory.create())
                 .build()
-                .POST(context, enetity, httpRespondResult);
+                .POST(enetity, httpRespondResult);
     }
 
     private static void POSTJson(Context context, BaseEnetity enetity, HashMap<String, String> header, HttpRespondResult httpRespondResult) {
@@ -201,27 +193,27 @@ public class LeopardHttp {
                 .addHeader(header)
                 .addRequestJsonFactory(RequestJsonFactory.create())
                 .build()
-                .POST(context, enetity, httpRespondResult);
+                .POST( enetity, httpRespondResult);
     }
 
     private static void GET(Context context, BaseEnetity enetity, HashMap<String, String> header, HttpRespondResult httpRespondResult) {
         getBuilder(context)
                 .addHeader(header)
                 .build()
-                .GET(context, enetity, httpRespondResult);
+                .GET(enetity, httpRespondResult);
     }
 
     private static void GET(Context context, BaseEnetity enetity, HttpRespondResult httpRespondResult) {
         getBuilder(context)
                 .build()
-                .GET(context, enetity, httpRespondResult);
+                .GET(enetity, httpRespondResult);
     }
 
     private static void GETjson(Context context, BaseEnetity enetity, HttpRespondResult httpRespondResult) {
         getBuilder(context)
                 .addRequestJsonFactory(RequestJsonFactory.create())
                 .build()
-                .GET(context, enetity, httpRespondResult);
+                .GET(enetity, httpRespondResult);
     }
 
     private static void GETjson(Context context, BaseEnetity enetity, HashMap<String, String> header, HttpRespondResult httpRespondResult) {
@@ -229,7 +221,7 @@ public class LeopardHttp {
                 .addHeader(header)
                 .addRequestJsonFactory(RequestJsonFactory.create())
                 .build()
-                .GET(context, enetity, httpRespondResult);
+                .GET( enetity, httpRespondResult);
     }
 
 }

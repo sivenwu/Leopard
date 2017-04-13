@@ -1,5 +1,6 @@
 package com.yuan.leopardkit.download;
 
+import android.content.Context;
 import android.os.Environment;
 import android.util.SparseArray;
 
@@ -197,6 +198,18 @@ public class DownLoadManager {
      */
     public void release(){
         pauseAllTask();
+    }
+
+    /**
+     * 获取下载列表
+     */
+
+    public List<DownloadInfo> getDownloadList(Context context){
+
+        if (HttpDbUtil.instance == null)
+            HttpDbUtil.initHttpDB(context.getApplicationContext());
+
+        return  HttpDbUtil.instance.queryFileInfo(0);
     }
 
 }

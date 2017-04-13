@@ -74,7 +74,8 @@ public class LeopardClient {
     private MediaType jsonMediaType = MediaType.parse("application/json; charset=utf-8");
     private MediaType dataMediaType = MediaType.parse("multipart/form-data");
 
-    public LeopardClient(BaseServerApi serverApi, Retrofit retrofit, Retrofit.Builder retrofitBuilder, OkHttpClient okHttpClient, OkHttpClient.Builder okHttpClientBuilder, boolean isJson) {
+    public LeopardClient(Context c,BaseServerApi serverApi, Retrofit retrofit, Retrofit.Builder retrofitBuilder, OkHttpClient okHttpClient, OkHttpClient.Builder okHttpClientBuilder, boolean isJson) {
+        this.mContext = c;
         this.serverApi = serverApi;
         this.retrofit = retrofit;
         this.retrofitBuilder = retrofitBuilder;
@@ -84,8 +85,7 @@ public class LeopardClient {
 
     }
 
-    public void POST(Context context, BaseEnetity entity, HttpRespondResult callback) {
-        mContext = context;
+    public void POST(BaseEnetity entity, HttpRespondResult callback) {
         //遍历搜索默认拦截器
         for (Interceptor interceptor : okHttpClient.interceptors()){
             if (interceptor instanceof RequestComFactory){
@@ -110,8 +110,7 @@ public class LeopardClient {
         }
     }
 
-    public void GET(Context context, BaseEnetity entity, HttpRespondResult callback) {
-        mContext = context;
+    public void GET(BaseEnetity entity, HttpRespondResult callback) {
         //遍历搜索默认拦截器
         for (Interceptor interceptor : okHttpClient.interceptors()){
             if (interceptor instanceof RequestComFactory){
@@ -136,90 +135,12 @@ public class LeopardClient {
         }
     }
 
-//    public void upLoadFile(Context context, FileEnetity enetity, final FileRespondResult callback) {
-//        mContext = context;
-//        RequestBody body =
-//                RequestBody.create(dataMediaType, enetity.getSimpleFile());
-//        UploadFileRequestBody body_up = new UploadFileRequestBody(body, new ProgressListener() {
-//            @Override
-//            public void onProgress(long progress, long total, boolean done) {
-//                callback.onExecuting(progress, total, done);
-//            }
-//        });
-//        serverApi
-//                .upLoadFile(enetity.getUrl(), body_up)
-//                .compose(schedulersTransformer)
-//                .subscribe(new BaseSubscriber(mContext, callback));
-//    }
-
-
     public UploadHelper upLoadFiles(final FileUploadEnetity enetity, final UploadIProgress callback) {
         UploadHelper  mUploadHelper = new UploadHelper(serverApi);
         mUploadHelper.upload(enetity,callback);
 
         return mUploadHelper;
     }
-
-    public void downloadFile(final DownloadInfo downloadInfo, IDownloadProgress iDownloadProgress, DownLoadTask task){
-//        DownLoadHelper downLoadHelper = new DownLoadHelper(serverApi);
-//        downLoadHelper.download(downloadInfo,iDownloadProgress);
-    }
-
-    public void downLoadFile(final DownloadInfo downloadInfo, FileRespondResult callback, DownLoadTask task){
-        // call 缓存实现
-//        serverApi.downloadFile(downloadInfo.getDownloadUrl())
-//                .compose(schedulersTransformer)
-//                .subscribe(new DownLoadSubscriber(callback,downloadInfo,task));
-        Observable.create(new Observable.OnSubscribe<ResponseBody>() {
-            @Override
-            public void call(Subscriber<? super ResponseBody> subscriber) {
-                if (downloadInfo.getState() == DownLoadManager.STATE_PAUSE){//如果暂停就不请求了
-                    return ;
-                }
-                Request request = new Request.Builder().url(downloadInfo.getUrl()).build();
-                try {
-                    Response response = okHttpClient.newCall(request).execute();
-                    if (downloadInfo.getFileLength() <= 0)
-                        downloadInfo.setFileLength(response.body().contentLength());
-                    DownLoadManager.getManager().writeCache(downloadInfo,response.body().byteStream());
-                    // TODO: 2016/8/31 更新数据库 这里记得做下数据库延时更新
-                    HttpDbUtil.instance.updateState(downloadInfo);
-                    if (downloadInfo.getState() != DownLoadManager.STATE_PAUSE)
-                    subscriber.onNext(response.body());
-                } catch (IOException e) {
-                    downloadInfo.setState(DownLoadManager.STATE_ERROR);
-                    // TODO: 2016/8/31 更新数据库
-                    HttpDbUtil.instance.updateState(downloadInfo);
-                    e.printStackTrace();
-                }
-            }
-        })
-                //避免doing too much work on its main thread.
-                .onBackpressureBuffer()
-                .subscribeOn(Schedulers.computation())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(new DownLoadSubscriber(callback,downloadInfo,task));
-    }
-
-//    public DownLoadManager downLoadFile( FileDwonEnetity enetity, final FileRespondResult callback) {
-//        for (Interceptor interceptor : okHttpClient.interceptors()) {
-//            if (interceptor instanceof DownLoadFileFactory) {
-//                DownLoadFileFactory factory = (DownLoadFileFactory) interceptor;
-//                factory.setDownloadInfo(enetity.getDownloadInfo());
-//                factory.setProgressListener(new ProgressListener() {
-//                    @Override
-//                    public void onProgress(long progress, long total, boolean done) {
-//                        callback.onExecuting(progress, total, done);
-//                    }
-//                });
-//            }
-//        }
-//
-////        DownLoadManager downLoadManager =  new DownLoadManager(callback,enetity.getDownloadInfos(),serverApi);
-//        DownLoadManager downLoadManager = new DownLoadManager(callback,enetity.getDownloadInfos(),serverApi);
-//        downLoadManager.downloadStart();
-//        return downLoadManager;
-//    }
 
     final Observable.Transformer schedulersTransformer = new Observable.Transformer() {
         @Override
@@ -233,6 +154,8 @@ public class LeopardClient {
     };
 
     public static class Builder {
+
+        private Context mContext;
 
         private String baseUrl = "http://127.0.0.1";
         private int TIME_OUT = 30 * 1000;
@@ -254,9 +177,20 @@ public class LeopardClient {
         private RequestComFactory requestComFactory;
         private CacheFactory cacheFactory;
 
-        public Builder() {
+        public Builder(Context c,String url) {
             retrofitBuilder = new Retrofit.Builder();
             okHttpClientBuilder = new OkHttpClient.Builder();
+
+            initDefalutConfig(url); // 加载默认配置
+
+            this.mContext = c;
+            HttpDbUtil.initHttpDB(c);// 尝试初始化数据库
+        }
+
+        private void initDefalutConfig(String url){
+            baseUrl(url);
+            addGsonConverterFactory(GsonConverterFactory.create());
+            addRxJavaCallAdapterFactory(RxJavaCallAdapterFactory.create());
         }
 
         public Builder baseUrl(String url) {
@@ -363,7 +297,7 @@ public class LeopardClient {
 
             serverApi = retrofit.create(BaseServerApi.class);
 
-            return new LeopardClient(serverApi, retrofit, retrofitBuilder, okHttpClient, okHttpClientBuilder, isJson);
+            return new LeopardClient(mContext,serverApi, retrofit, retrofitBuilder, okHttpClient, okHttpClientBuilder, isJson);
         }
 
     }

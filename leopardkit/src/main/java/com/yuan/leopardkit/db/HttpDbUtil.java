@@ -125,6 +125,9 @@ public class HttpDbUtil {
      * @param info
      */
     public void updateState(FileLoadInfo info) {
+
+        checkNULL();
+
         WeakHashMap<Object, Long> map = null;
         if (info.getRefreshTime() == 0L) {
             info.setRefreshTime(System.currentTimeMillis());

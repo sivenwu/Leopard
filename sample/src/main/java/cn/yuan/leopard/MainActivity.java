@@ -4,8 +4,10 @@ import android.os.Bundle;
 import android.support.design.widget.TabLayout;
 import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
+import android.util.Log;
 
 import com.yuan.leopardkit.LeopardHttp;
+import com.yuan.leopardkit.http.base.BaseEnetity;
 import com.yuan.leopardkit.ui.activitys.LeopardActivity;
 
 import cn.yuan.leopard.fragments.MainTabFragment;
@@ -23,9 +25,8 @@ public class MainActivity extends LeopardActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        /**  建议初始化放在application **/
-        LeopardHttp.init(this);//如果只想用下载 上传，直接初始化即可
-        LeopardHttp.bindServer("http://wxwusy.applinzi.com/leopardWeb/app/");// 如果用到请求，要提前绑定域名喔
+        /**  因为是单例模式进行构建leopard请求，所以请求前需要先进行域名绑定 **/
+        LeopardHttp.bindServer("http://wxwusy.applinzi.com");
 //        LeopardHttp.setUseCache(true);// 是否启动缓存
         initView();
     }
