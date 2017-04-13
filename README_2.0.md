@@ -10,26 +10,26 @@
 
 ## 导航
 ### 使用方法（自动化构建）
-- [0.绑定域名，无须初始化](#auto_0)</br>
-- [1. 基本请求](#auto_1)</br>
-    - [1.1  post与get键值对请求](#auto_1_1)</br>
-    - [1.2  post与get自定义Json对象请求](#auto_1_2)</br>
-    - [1.3 post与get请求，带头部](#auto_1_3)</br>
-- [2. 请求回调](#auto_2)</br>
-- [3. 缓存使用](#auto_3)</br>
-- [4. 上传管理](#auto_4)</br>
-    - [4.1 基本上传](#auto_4_1)</br>
-- [5. 下载管理](#auto_5)</br>
-    - [5.1 基本下载(添加任务Task与启动下载)](#auto_5_1)</br>
-    - [5.2 DownLoadManager 单任务下载管理](#auto_5_2)</br>
-    - [5.3 DownLoadManager 多任务下载管理](#auto_5_3)</br>
+- [0.绑定域名，无须初始化](#user-content-0-绑定域名无须初始化)</br>
+- [1. 基本请求](#user-content-1-基本请求)</br>
+    - [1.1  post与get键值对请求](#user-content-11--post与get键值对请求)</br>
+    - [1.2  post与get自定义Json对象请求](#user-content-12--post与get自定义json对象请求)</br>
+    - [1.3 post与get请求，带头部](#user-content-13-post与get请求带头部)</br>
+- [2. 请求回调](#user-content-2-请求回调)</br>
+- [3. 缓存使用](#user-content-3-缓存使用)</br>
+- [4. 上传管理](#user-content-4-上传管理)</br>
+    - [4.1 基本上传](#user-content-41-基本上传)</br>
+- [5. 下载管理](#user-content-5-下载管理)</br>
+    - [5.1 基本下载(添加任务Task与启动下载)](#user-content-51-基本下载添加任务task与启动下载)</br>
+    - [5.2 DownLoadManager 单任务下载管理](#user-content-52-downloadmanager-单任务下载管理)</br>
+    - [5.3 DownLoadManager 多任务下载管理](#user-content-53-downloadmanager-多任务下载管理)</br>
 
  ### 使用方法（自定义）
 - [1. 基本请求](#pro_1)</br>
-    - [1.1  post与get键值对请求](#pro_1_1)</br>
-    - [1.2  post与get自定义Json对象请求](#pro_1_2)</br>
-- [2. 下载管理 ( 由DownLoadManager 管理)](#pro_2)</br>
-- [3. 上传管理](#pro_3)
+    - [1.1  post与get键值对请求](#user-content-11-post与-get-键值对请求)</br>
+    - [1.2  post与get自定义Json对象请求](#user-content-12-post与-get-自定义json请求)</br>
+- [2. 下载管理 ( 由DownLoadManager 管理)](#user-content-2-下载管理--由downloadmanager-管理)</br>
+- [3. 上传管理](#user-content-3-上传管理)
 
 
 ## 使用方法（自动化构建）
