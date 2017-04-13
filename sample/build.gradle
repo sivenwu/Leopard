@@ -31,7 +31,7 @@ dependencies {
     compile 'com.android.support:design:23.4.0'
 
     //leopard
-    compile project(':leopardkit')
+//    compile project(':leopardkit')
     // 1.0 - 1.1 提供基本请求、下载、上传功能
     // 1.2 增加在线与离线缓存功能，支持Post与get，详情使用看demo
 
@@ -48,4 +48,14 @@ dependencies {
     // 3、上传逻辑独立抽成UploadHelper,代理完成上传逻辑
     // 4、下载逻辑独立抽成DownloadHelper,代理完成下载逻辑
 //    compile 'cn.yuancloud.app:leopardkit:1.4'
+
+    //..
+
+    // 1.6 :
+//    1.去除LeopardHttp初始化，使用通过bindServer域名即可
+//    2.增加回调对象类型，回调HttpRespondObjectResult即可
+//    3.增加DownLoadManager获取未下载完成列表入口
+//    4.修复部分bug
+//    5.完善sample请求类型
+    compile 'cn.yuancloud.app:leopardkit:1.6'
 }
