@@ -70,6 +70,10 @@ Verson 1.6
 4.修复部分bug
 5.完善sample请求类型
 ```
+Verson 1.6.1
+``` java
+修复当下载链接文件异常导致DownLoadTask越界问题
+```
 
 ### 原理解析
 
