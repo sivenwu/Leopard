@@ -155,9 +155,17 @@ public class DownLoadHelper {
                             public void onResponse(Call call, Response response) throws IOException {
                                 if (downloadInfo.getFileLength() <= 0)
                                     downloadInfo.setFileLength(response.body().contentLength());
-                                DownLoadManager.getManager().writeCache(downloadInfo,response.body().byteStream());
-                                // TODO: 2016/8/31 更新数据库 这里记得做下数据库延时更新
-                                HttpDbUtil.instance.updateState(downloadInfo);
+                                // TODO: 2017/5/4 URL有效，现在文件为无效的时候直接停止回调 
+                                if (downloadInfo.getFileLength() <= 0){
+                                    failedMessage = "This file is invalid";
+                                    handler.sendEmptyMessage(HANDLER_CODE_FAILED);
+                                    stop();
+                                }else {
+                                    DownLoadManager.getManager().writeCache(downloadInfo, response.body().byteStream());
+                                    // TODO: 2016/8/31 更新数据库 这里记得做下数据库延时更新
+                                    HttpDbUtil.instance.updateState(downloadInfo);
+                                }
+
                                 if (downloadInfo.getState() != DownLoadManager.STATE_PAUSE)
                                     subscriber.onNext(response.body());
                             }
@@ -206,6 +214,7 @@ public class DownLoadHelper {
                     @Override
                     public void onFailed(String message) {
                         failedMessage = message;
+                        handler.sendEmptyMessage(HANDLER_CODE_FAILED);
                     }
                 }, this.downloadInfo))
                 .build();
@@ -238,8 +247,11 @@ public class DownLoadHelper {
             this.bodySubscriber = null;
         }
         stopRefreshTimer();
-        if (DownloadStateUtil.isWaiting(downloadInfo))
-        this.iDownloadProgress.onProgress(downloadInfo.getKey(),0L,downloadInfo.getFileLength(),false); // 回调说明停止了下载
+//        if (DownloadStateUtil.isWaiting(downloadInfo)) {
+//            this.iDownloadProgress.onProgress(downloadInfo.getKey(), 0L, downloadInfo.getFileLength(), false); // 回调说明停止了下载
+//        }else if (DownloadStateUtil.isPause(downloadInfo)){
+//            this.iDownloadProgress.onProgress(downloadInfo.getKey(), downloadInfo.getBreakProgress(), downloadInfo.getFileLength(), false); // 回调说明停止了下载
+//        }
     }
 
     public void pause(){

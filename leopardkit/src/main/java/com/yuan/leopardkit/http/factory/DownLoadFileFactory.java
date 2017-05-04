@@ -38,21 +38,19 @@ public class DownLoadFileFactory implements Interceptor {
     }
 
     @Override
-    public Response intercept(Chain chain) {
+    public Response intercept(Chain chain) throws IOException {
         Request request = chain.request().newBuilder().addHeader("RANGE", "bytes=" + downloadInfo.getBreakProgress() + "-").build();
         Response originalResponse = null;
+        Response response = null;
         try {
             originalResponse = chain.proceed(request);
+            DownLoadResponseBody body = new DownLoadResponseBody(this.downloadInfo, originalResponse.body(), this.downLoadBodyListener);
+            response = originalResponse.newBuilder().body(body).build();
+            return response;
         } catch (IOException e) {
-            DownLoadManager.getManager().pauseTask(this.downloadInfo);
             this.downLoadBodyListener.onFailed(e.getMessage().toString());
-            e.printStackTrace();
-
-            return originalResponse;
+            throw e;
         }
-        DownLoadResponseBody body = new DownLoadResponseBody(this.downloadInfo ,originalResponse.body(), this.downLoadBodyListener);
-        Response response = originalResponse.newBuilder().body(body).build();
-        return response;
     }
 
     public static DownLoadFileFactory create() {

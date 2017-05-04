@@ -88,7 +88,7 @@ public class DownloadFragment extends Fragment implements View.OnClickListener {
 
         if (data.size() <=0) {
             for (int i = 0; i < 3; i++) {
-                String url = "http://f1.market.xiaomi.com/download/AppStore/03f82a470d7ac44300d8700880584fe856387aac6/cn.wsy.travel.apk";
+                String url = "http://f2.market.xiaomi.com/download/AppStore/03f82a470d7ac44300d8700880584fe856387aac6/cn.wsy.travel.apk";
                 DownloadInfo info = new DownloadInfo();
                 info.setUrl(url);
                 info.setFileSavePath(Environment.getExternalStorageDirectory() + "/AAADwonload/");// 自定义下载路径

@@ -130,10 +130,6 @@ public class DownLoadTask {
         try {
             randomAccessFile = new RandomAccessFile(file, "rwd");
             channelOut = randomAccessFile.getChannel();
-            if (channelOut.size() <=0){
-                this.iDownloadProgress.onFailed(null,"Error URL!!!");
-                return ;
-            }
             MappedByteBuffer mappedBuffer = channelOut.map(FileChannel.MapMode.READ_WRITE, downloadInfo.getBreakProgress(), downloadInfo.getFileLength()-downloadInfo.getBreakProgress());
             byte[] buffer = new byte[1024];
             int len;

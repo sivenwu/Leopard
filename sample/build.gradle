@@ -31,7 +31,7 @@ dependencies {
     compile 'com.android.support:design:23.4.0'
 
     //leopard
-//    compile project(':leopardkit')
+    compile project(':leopardkit')
     // 1.0 - 1.1 提供基本请求、下载、上传功能
     // 1.2 增加在线与离线缓存功能，支持Post与get，详情使用看demo
 
@@ -60,5 +60,5 @@ dependencies {
 
     // 1.6.1 :
     // 修复当下载链接文件异常导致DownLoadTask越界问题
-    compile 'cn.yuancloud.app:leopardkit:1.6.1'
+//    compile 'cn.yuancloud.app:leopardkit:1.6.1'
 }

@@ -9,6 +9,7 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ProgressBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.yuan.leopardkit.LeopardHttp;
 import com.yuan.leopardkit.download.DownLoadManager;
@@ -83,6 +84,10 @@ public class DownLoadApater extends RecyclerView.Adapter<DownLoadApater.MyViewHo
             public void onProgress(long key,long progress, long total, boolean done) {
 
 //                Log.i("yuan onProgress", " progress : " + progress + "now total :" + total);
+                if (total == 0){
+                    holder.progressShow.setText("0%");
+                    return;
+                }
 
                 holder.progressBar.setMax((int) total);
                 holder.progressBar.setProgress((int) progress);
@@ -117,6 +122,8 @@ public class DownLoadApater extends RecyclerView.Adapter<DownLoadApater.MyViewHo
             @Override
             public void onFailed(Throwable e, String reason) {
                 // nothing..
+                holder.downBtn.setText("继续");
+                holder.prgressTv.setText(reason);
             }
         });
 
@@ -145,6 +152,12 @@ public class DownLoadApater extends RecyclerView.Adapter<DownLoadApater.MyViewHo
                 if (info.getState() == DownLoadManager.STATE_DOWNLOADING) {
                     holder.downBtn.setText("继续");
                     DownLoadManager.getManager().pauseTask(info);
+                    return;
+                }
+
+                if (info.getState() == DownLoadManager.STATE_ERROR) {
+                    holder.downBtn.setText("暫停");
+                    DownLoadManager.getManager().resumeTask(info);
                     return;
                 }
             }
