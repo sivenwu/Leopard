@@ -7,7 +7,7 @@ Leopard 意为猎豹，在所有猫科动物中。猎豹体型最小，速度快
 提供一个满足日常需求的HTTP线程安全请求封装Library，底层由Retrofit+Okhttp+RxJava支持，通过构建者builder设计模式实现。目前实现POST、GET（支持自定义头文件、表单键值对请求、自定义数据源等基本请求）、文件上传管理（支持单文件上传与多文件上传，不限制文件类型）、文件下载管理（支持单文件下载与多文件下载、不限制文件类型、支持大文件下载与断点下载）
 
 ### 简单版本（SimpleLeopard）
-集成了下载和上传文件功能，具体使用方法，请跳转：https://github.com/YuanClouds/SimarrmpleLeopard
+集成了下载和上传文件功能，具体使用方法，请跳转：https://github.com/YuanClouds/SimpleLeopard
 
 ### 演示
 
